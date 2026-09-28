@@ -1,0 +1,137 @@
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">Products</h3>
+        <div class="card-tools">
+            <% if (can('PRODUCT.CREATE')) { %>
+                <a href="/panel/products/create" class="btn btn-sm btn-primary"><i class="fas fa-plus"></i> Add Product</a>
+            <% } %>
+        </div>
+    </div>
+
+    <div class="card-body border-bottom">
+        <form method="GET" action="/panel/products" class="row align-items-end">
+            <div class="col-md-3 mb-3">
+                <label class="form-label mb-1">Search</label>
+                <input type="text" name="search" value="<%= filters.search || '' %>" class="form-control" placeholder="Name, SKU, code, brand">
+            </div>
+            <div class="col-md-2 mb-3">
+                <label class="form-label mb-1">Category</label>
+                <select name="categoryId" class="form-select">
+                    <option value="">All Categories</option>
+                    <% categories.forEach(function (c) { %>
+                        <option value="<%= c._id %>" <%= filters.categoryId == c._id ? 'selected' : '' %>><%= c.name %></option>
+                    <% }); %>
+                </select>
+            </div>
+            <div class="col-md-2 mb-3">
+                <label class="form-label mb-1">Type</label>
+                <select name="productType" class="form-select">
+                    <option value="">All Types</option>
+                    <option value="SIMPLE" <%= filters.productType === 'SIMPLE' ? 'selected' : '' %>>Simple</option>
+                    <option value="VARIABLE" <%= filters.productType === 'VARIABLE' ? 'selected' : '' %>>Variable</option>
+                </select>
+            </div>
+            <div class="col-md-2 mb-3">
+                <label class="form-label mb-1">Status</label>
+                <select name="status" class="form-select">
+                    <option value="">All Status</option>
+                    <% ['DRAFT','ACTIVE','INACTIVE','ARCHIVED'].forEach(function(s){ %>
+                        <option value="<%= s %>" <%= filters.status === s ? 'selected' : '' %>><%= s %></option>
+                    <% }); %>
+                </select>
+            </div>
+            <div class="col-md-2 mb-3">
+                <label class="form-label mb-1">Sort</label>
+                <select name="sort" class="form-select">
+                    <option value="">Newest</option>
+                    <option value="OLDEST" <%= filters.sort === 'OLDEST' ? 'selected' : '' %>>Oldest</option>
+                    <option value="NAME_ASC" <%= filters.sort === 'NAME_ASC' ? 'selected' : '' %>>Name A-Z</option>
+                    <option value="NAME_DESC" <%= filters.sort === 'NAME_DESC' ? 'selected' : '' %>>Name Z-A</option>
+                    <option value="PRICE_ASC" <%= filters.sort === 'PRICE_ASC' ? 'selected' : '' %>>Price Low-High</option>
+                    <option value="PRICE_DESC" <%= filters.sort === 'PRICE_DESC' ? 'selected' : '' %>>Price High-Low</option>
+                    <option value="MANUAL" <%= filters.sort === 'MANUAL' ? 'selected' : '' %>>Manual Order</option>
+                </select>
+            </div>
+            <div class="col-md-1 mb-3">
+                <button type="submit" class="btn btn-secondary w-100"><i class="fas fa-filter"></i> Filter</button>
+            </div>
+        </form>
+    </div>
+
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-vcenter table-striped mb-0 card-table">
+                <thead>
+                    <tr>
+                        <th style="width: 50px;">Image</th>
+                        <th>Product Name</th>
+                        <th>SKU</th>
+                        <th>Category</th>
+                        <th>Variations</th>
+                        <th>Price</th>
+                        <th>Stock</th>
+                        <th>Status</th>
+                        <th>Updated</th>
+                        <th style="width: 130px;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% if (!records || !records.length) { %>
+                        <tr><td colspan="10" class="text-center text-muted py-4">No products found</td></tr>
+                    <% } %>
+                    <% records.forEach(function (r) { %>
+                        <% var primaryImage = (r.images || []).find(function(i){ return i.isPrimary; }) || (r.images || [])[0]; %>
+                        <% var stock = r.productType === 'VARIABLE' ? (r.variations || []).reduce(function(s,v){ return s + (v.stockQuantity||0); }, 0) : (r.inventory ? r.inventory.globalStock : 0); %>
+                        <% var imgUrl = mediaUrl(primaryImage ? primaryImage.image : null); %>
+                        <tr>
+                            <td>
+                                <% if (imgUrl) { %>
+                                    <img src="<%= imgUrl %>" class="thumb-img" onerror="this.style.visibility='hidden'">
+                                <% } else { %>
+                                    <span class="thumb-img thumb-img-placeholder" title="No image"><i class="fas fa-image"></i></span>
+                                <% } %>
+                            </td>
+                            <td>
+                                <a href="/panel/products/<%= r._id %>"><%= r.name %></a>
+                                <% if (r.featured) { %><span class="badge badge-warning ms-1">Featured</span><% } %>
+                            </td>
+                            <td><%= r.productType === 'SIMPLE' ? (r.baseSku || '-') : ((r.variations || []).length + ' variations') %></td>
+                            <td><%= r.categoryId ? r.categoryId.name : '-' %><% if (r.subcategoryId) { %> / <%= r.subcategoryId.name %><% } %></td>
+                            <td><%= r.productType === 'VARIABLE' ? (r.variations || []).length : '-' %></td>
+                            <td>
+                                <% if (r.pricing && r.pricing.salePrice) { %>
+                                    <span class="text-danger font-weight-bold"><%= r.pricing.currency %> <%= r.pricing.salePrice %></span>
+                                    <small class="form-hint"><del><%= r.pricing.price %></del></small>
+                                <% } else { %>
+                                    <%= r.pricing ? (r.pricing.currency + ' ' + (r.pricing.price != null ? r.pricing.price : '-')) : '-' %>
+                                <% } %>
+                            </td>
+                            <td><%= stock %></td>
+                            <td>
+                                <% var statusClass = { DRAFT: 'badge-secondary', ACTIVE: 'badge-success', INACTIVE: 'badge-warning', ARCHIVED: 'badge-dark' }[r.status] || 'badge-secondary'; %>
+                                <span class="badge <%= statusClass %>"><%= r.status %></span>
+                            </td>
+                            <td><%= new Date(r.updatedAt).toLocaleDateString() %></td>
+                            <td>
+                                <div class="btn-list flex-nowrap">
+                                    <a href="/panel/products/<%= r._id %>" class="btn btn-xs btn-outline-info" title="View"><i class="fas fa-eye"></i></a>
+                                    <% if (can('PRODUCT.UPDATE')) { %>
+                                        <a href="/panel/products/<%= r._id %>/edit" class="btn btn-xs btn-outline-primary" title="Edit"><i class="fas fa-edit"></i></a>
+                                    <% } %>
+                                    <% if (can('PRODUCT.DELETE')) { %>
+                                        <form action="/panel/products/<%= r._id %>/delete" method="POST" class="d-inline" onsubmit="return confirm('Delete this product?');">
+                                            <button type="submit" class="btn btn-xs btn-outline-danger" title="Delete"><i class="fas fa-trash"></i></button>
+                                        </form>
+                                    <% } %>
+                                </div>
+                            </td>
+                        </tr>
+                    <% }); %>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="card-footer">
+        <%- include('../partials/pagination') %>
+    </div>
+</div>

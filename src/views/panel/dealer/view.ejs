@@ -1,0 +1,262 @@
+<% var approvalBadge = { PENDING: 'badge-warning', APPROVED: 'badge-success', REJECTED: 'badge-danger', SUSPENDED: 'badge-dark' }; %>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card card-primary">
+            <div class="card-header">
+                <h3 class="card-title"><%= record.businessName %> <span class="badge <%= approvalBadge[record.approvalStatus] || 'badge-secondary' %> ms-1"><%= record.approvalStatus %></span></h3>
+                <div class="card-tools">
+                    <% if (can('DEALER.UPDATE')) { %>
+                        <a href="/panel/dealers/<%= record._id %>/edit" class="btn btn-sm btn-primary"><i class="fas fa-edit"></i> Edit</a>
+                    <% } %>
+                    <a href="/panel/dealers" class="btn btn-sm btn-default">Back</a>
+                </div>
+            </div>
+            <div class="card-body">
+                <dl class="row mb-0">
+                    <dt class="col-sm-3">Dealer Code</dt><dd class="col-sm-9"><%= record.dealerCode %></dd>
+                    <dt class="col-sm-3">Contact</dt><dd class="col-sm-9"><%= record.contactName || '-' %></dd>
+                    <dt class="col-sm-3">Email</dt><dd class="col-sm-9"><%= record.email %></dd>
+                    <dt class="col-sm-3">Phone</dt><dd class="col-sm-9"><%= record.phoneCode || '' %> <%= record.phone || '-' %></dd>
+                    <dt class="col-sm-3">Address</dt><dd class="col-sm-9"><%= record.address || '-' %></dd>
+                    <dt class="col-sm-3">Location</dt><dd class="col-sm-9"><%= [record.city, record.state, record.country].filter(Boolean).join(', ') || '-' %></dd>
+                    <dt class="col-sm-3">Tax Number</dt><dd class="col-sm-9"><%= record.taxNumber || '-' %></dd>
+                    <dt class="col-sm-3">Default Discount</dt><dd class="col-sm-9"><%= record.defaultDiscount || 0 %>%</dd>
+                    <dt class="col-sm-3">Status</dt><dd class="col-sm-9"><span class="badge <%= record.status === 'ACTIVE' ? 'badge-success' : 'badge-secondary' %>"><%= record.status %></span></dd>
+                    <% if (record.approvalRemark) { %>
+                        <dt class="col-sm-3">Last Remark</dt><dd class="col-sm-9"><%= record.approvalRemark %></dd>
+                    <% } %>
+                </dl>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Dealer Pricing</h3>
+                <div class="card-tools"><small class="form-hint">Product-specific price - highest priority</small></div>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-vcenter table-sm mb-0 card-table">
+                        <thead>
+                            <tr>
+                                <th>Product</th>
+                                <th>Price</th>
+                                <th>Effective</th>
+                                <th>Status</th>
+                                <th style="width: 60px;"></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% if (!pricingRows.length) { %>
+                                <tr><td colspan="5" class="text-center text-muted py-3">No dealer-specific pricing yet</td></tr>
+                            <% } %>
+                            <% pricingRows.forEach(function (p) { %>
+                                <tr>
+                                    <td><%= p.productId ? p.productId.name : 'Unknown product' %></td>
+                                    <td><%= p.price %></td>
+                                    <td>
+                                        <% if (p.effectiveFrom || p.effectiveTo) { %>
+                                            <%= p.effectiveFrom ? new Date(p.effectiveFrom).toLocaleDateString() : '-' %> &rarr; <%= p.effectiveTo ? new Date(p.effectiveTo).toLocaleDateString() : '-' %>
+                                        <% } else { %>-<% } %>
+                                    </td>
+                                    <td><span class="badge <%= p.status === 'ACTIVE' ? 'badge-success' : 'badge-secondary' %>"><%= p.status %></span></td>
+                                    <td>
+                                        <% if (can('DEALER.UPDATE')) { %>
+                                        <form action="/panel/dealers/<%= record._id %>/pricing/<%= p._id %>/delete" method="POST" onsubmit="return confirm('Remove this price override?');">
+                                            <button type="submit" class="btn btn-xs btn-outline-danger" title="Remove"><i class="fas fa-trash"></i></button>
+                                        </form>
+                                        <% } %>
+                                    </td>
+                                </tr>
+                            <% }); %>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <% if (can('DEALER.UPDATE')) { %>
+            <div class="card-footer">
+                <form action="/panel/dealers/<%= record._id %>/pricing/create" method="POST" class="row align-items-end g-2">
+                    <div class="col-md-4">
+                        <label class="form-label mb-1" style="font-size:.75rem;">Product</label>
+                        <select name="productId" class="form-select form-select-sm" required>
+                            <option value="">Select product</option>
+                            <% products.forEach(function (p) { %>
+                                <option value="<%= p._id %>"><%= p.name %> <% if (p.baseSku) { %>(<%= p.baseSku %>)<% } %></option>
+                            <% }); %>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label mb-1" style="font-size:.75rem;">Price</label>
+                        <input type="number" step="0.01" min="0" name="price" class="form-control form-control-sm" required>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label mb-1" style="font-size:.75rem;">From</label>
+                        <input type="date" name="effectiveFrom" class="form-control form-control-sm">
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label mb-1" style="font-size:.75rem;">To</label>
+                        <input type="date" name="effectiveTo" class="form-control form-control-sm">
+                    </div>
+                    <input type="hidden" name="status" value="ACTIVE">
+                    <div class="col-md-2">
+                        <button type="submit" class="btn btn-sm btn-primary w-100"><i class="fas fa-plus"></i> Add</button>
+                    </div>
+                </form>
+            </div>
+            <% } %>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Category Discounts</h3>
+                <div class="card-tools"><small class="form-hint">Used when no product-specific price applies</small></div>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-vcenter table-sm mb-0 card-table">
+                        <thead>
+                            <tr>
+                                <th>Category</th>
+                                <th>Discount</th>
+                                <th>Effective</th>
+                                <th>Status</th>
+                                <th style="width: 60px;"></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% if (!discountRows.length) { %>
+                                <tr><td colspan="5" class="text-center text-muted py-3">No category discounts yet</td></tr>
+                            <% } %>
+                            <% discountRows.forEach(function (d) { %>
+                                <tr>
+                                    <td><%= d.categoryId ? d.categoryId.name : 'Unknown category' %></td>
+                                    <td><%= d.discountPercent %>%</td>
+                                    <td>
+                                        <% if (d.effectiveFrom || d.effectiveTo) { %>
+                                            <%= d.effectiveFrom ? new Date(d.effectiveFrom).toLocaleDateString() : '-' %> &rarr; <%= d.effectiveTo ? new Date(d.effectiveTo).toLocaleDateString() : '-' %>
+                                        <% } else { %>-<% } %>
+                                    </td>
+                                    <td><span class="badge <%= d.status === 'ACTIVE' ? 'badge-success' : 'badge-secondary' %>"><%= d.status %></span></td>
+                                    <td>
+                                        <% if (can('DEALER.UPDATE')) { %>
+                                        <form action="/panel/dealers/<%= record._id %>/discounts/<%= d._id %>/delete" method="POST" onsubmit="return confirm('Remove this discount?');">
+                                            <button type="submit" class="btn btn-xs btn-outline-danger" title="Remove"><i class="fas fa-trash"></i></button>
+                                        </form>
+                                        <% } %>
+                                    </td>
+                                </tr>
+                            <% }); %>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <% if (can('DEALER.UPDATE')) { %>
+            <div class="card-footer">
+                <form action="/panel/dealers/<%= record._id %>/discounts/create" method="POST" class="row align-items-end g-2">
+                    <div class="col-md-4">
+                        <label class="form-label mb-1" style="font-size:.75rem;">Category</label>
+                        <select name="categoryId" class="form-select form-select-sm" required>
+                            <option value="">Select category</option>
+                            <% categories.forEach(function (c) { %>
+                                <option value="<%= c._id %>"><%= c.name %></option>
+                            <% }); %>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label mb-1" style="font-size:.75rem;">Discount %</label>
+                        <input type="number" step="0.01" min="0" max="100" name="discountPercent" class="form-control form-control-sm" required>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label mb-1" style="font-size:.75rem;">From</label>
+                        <input type="date" name="effectiveFrom" class="form-control form-control-sm">
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label mb-1" style="font-size:.75rem;">To</label>
+                        <input type="date" name="effectiveTo" class="form-control form-control-sm">
+                    </div>
+                    <input type="hidden" name="status" value="ACTIVE">
+                    <div class="col-md-2">
+                        <button type="submit" class="btn btn-sm btn-primary w-100"><i class="fas fa-plus"></i> Add</button>
+                    </div>
+                </form>
+            </div>
+            <% } %>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <% if (can('DEALER.UPDATE')) { %>
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Approval</h3>
+            </div>
+            <div class="card-body">
+                <% if (record.approvalStatus === 'PENDING') { %>
+                    <form action="/panel/dealers/<%= record._id %>/approval-status" method="POST" class="mb-3" onsubmit="return confirm('Approve this dealer?');">
+                        <input type="hidden" name="status" value="APPROVED">
+                        <button type="submit" class="btn btn-success w-100"><i class="fas fa-check"></i> Approve</button>
+                    </form>
+                    <form action="/panel/dealers/<%= record._id %>/approval-status" method="POST">
+                        <input type="hidden" name="status" value="REJECTED">
+                        <label class="form-label mb-1" style="font-size:.75rem;">Rejection Remark</label>
+                        <textarea name="remark" class="form-control form-control-sm mb-2" rows="2" placeholder="Reason for rejection"></textarea>
+                        <button type="submit" class="btn btn-outline-danger w-100" onclick="return confirm('Reject this dealer?');"><i class="fas fa-times"></i> Reject</button>
+                    </form>
+                <% } else if (record.approvalStatus === 'APPROVED') { %>
+                    <form action="/panel/dealers/<%= record._id %>/approval-status" method="POST">
+                        <input type="hidden" name="status" value="SUSPENDED">
+                        <label class="form-label mb-1" style="font-size:.75rem;">Suspension Remark</label>
+                        <textarea name="remark" class="form-control form-control-sm mb-2" rows="2" placeholder="Reason for suspension"></textarea>
+                        <button type="submit" class="btn btn-outline-dark w-100" onclick="return confirm('Suspend this dealer?');"><i class="fas fa-pause"></i> Suspend</button>
+                    </form>
+                <% } else if (record.approvalStatus === 'REJECTED') { %>
+                    <form action="/panel/dealers/<%= record._id %>/approval-status" method="POST" onsubmit="return confirm('Approve this dealer?');">
+                        <input type="hidden" name="status" value="APPROVED">
+                        <button type="submit" class="btn btn-success w-100"><i class="fas fa-check"></i> Approve</button>
+                    </form>
+                <% } else if (record.approvalStatus === 'SUSPENDED') { %>
+                    <form action="/panel/dealers/<%= record._id %>/approval-status" method="POST" onsubmit="return confirm('Reactivate this dealer?');">
+                        <input type="hidden" name="status" value="APPROVED">
+                        <button type="submit" class="btn btn-success w-100"><i class="fas fa-play"></i> Reactivate</button>
+                    </form>
+                <% } %>
+            </div>
+        </div>
+        <% } %>
+
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Recent Activity</h3>
+            </div>
+            <div class="card-body p-0">
+                <ul class="list-group list-group-flush">
+                    <% if (!auditLogs.length) { %>
+                        <li class="list-group-item text-muted">No history yet</li>
+                    <% } %>
+                    <% auditLogs.forEach(function (a) { %>
+                        <li class="list-group-item">
+                            <strong><%= (a.action || '').replace(/_/g, ' ') %></strong><br>
+                            <small><%= a.summary %></small><br>
+                            <small class="form-hint"><%= new Date(a.createdAt).toLocaleString() %> <% if (a.performedByName) { %>by <%= a.performedByName %><% if (a.performedByRole) { %> (<%= a.performedByRole %>)<% } %><% } %></small>
+                            <% if (a.changes && a.changes.length) { %>
+                                <table class="table table-sm table-vcenter mt-2 mb-0">
+                                    <thead><tr><th>Field</th><th>Old</th><th>New</th></tr></thead>
+                                    <tbody>
+                                        <% a.changes.forEach(function (c) { %>
+                                            <tr>
+                                                <td><%= c.label %></td>
+                                                <td class="text-muted"><del><%= c.oldValue ?? '-' %></del></td>
+                                                <td><strong><%= c.newValue ?? '-' %></strong></td>
+                                            </tr>
+                                        <% }); %>
+                                    </tbody>
+                                </table>
+                            <% } %>
+                        </li>
+                    <% }); %>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>

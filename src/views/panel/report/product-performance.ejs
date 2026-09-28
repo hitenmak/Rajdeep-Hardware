@@ -1,0 +1,55 @@
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">Product Performance Report</h3>
+        <div class="card-tools">
+            <a href="/panel/reports" class="btn btn-sm btn-default">Back to Reports</a>
+            <% if (can('REPORT.EXPORT')) { %>
+                <a href="/panel/reports/product-performance/export?<%= new URLSearchParams(filters).toString() %>" class="btn btn-sm btn-primary"><i class="fas fa-file-export"></i> Export</a>
+            <% } %>
+        </div>
+    </div>
+
+    <div class="card-body border-bottom">
+        <form method="GET" action="/panel/reports/product-performance" class="row align-items-end">
+            <div class="col-md-3 mb-3">
+                <label class="form-label mb-1">From</label>
+                <input type="date" name="dateFrom" value="<%= filters.dateFrom || '' %>" class="form-control">
+            </div>
+            <div class="col-md-3 mb-3">
+                <label class="form-label mb-1">To</label>
+                <input type="date" name="dateTo" value="<%= filters.dateTo || '' %>" class="form-control">
+            </div>
+            <div class="col-md-2 mb-3">
+                <button type="submit" class="btn btn-secondary w-100"><i class="fas fa-filter"></i> Filter</button>
+            </div>
+        </form>
+    </div>
+
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-vcenter table-sm mb-0 card-table">
+                <thead>
+                    <tr>
+                        <th>Product</th><th>SKU</th><th>Category</th><th>Units Sold</th><th>Revenue</th><th>Avg. Selling Price</th><th>Current Stock</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% if (!rows.length) { %>
+                        <tr><td colspan="7" class="text-center text-muted py-4">No product sales in this range</td></tr>
+                    <% } %>
+                    <% rows.forEach(function (r) { %>
+                        <tr>
+                            <td><%= r.productName %></td>
+                            <td><%= r.sku || '-' %></td>
+                            <td><%= r.categoryName %></td>
+                            <td><%= r.unitsSold %></td>
+                            <td><%= r.revenue %></td>
+                            <td><%= r.averageSellingPrice %></td>
+                            <td><%= r.currentStock %></td>
+                        </tr>
+                    <% }); %>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

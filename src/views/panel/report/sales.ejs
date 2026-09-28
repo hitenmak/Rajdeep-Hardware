@@ -1,0 +1,80 @@
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">Sales Report</h3>
+        <div class="card-tools">
+            <a href="/panel/reports" class="btn btn-sm btn-default">Back to Reports</a>
+            <% if (can('REPORT.EXPORT')) { %>
+                <a href="/panel/reports/sales/export?<%= new URLSearchParams(filters).toString() %>" class="btn btn-sm btn-primary"><i class="fas fa-file-export"></i> Export</a>
+            <% } %>
+        </div>
+    </div>
+
+    <div class="card-body border-bottom">
+        <form method="GET" action="/panel/reports/sales" class="row align-items-end">
+            <div class="col-md-3 mb-3">
+                <label class="form-label mb-1">From</label>
+                <input type="date" name="dateFrom" value="<%= filters.dateFrom || '' %>" class="form-control">
+            </div>
+            <div class="col-md-3 mb-3">
+                <label class="form-label mb-1">To</label>
+                <input type="date" name="dateTo" value="<%= filters.dateTo || '' %>" class="form-control">
+            </div>
+            <div class="col-md-3 mb-3">
+                <label class="form-label mb-1">Dealer</label>
+                <select name="dealerId" class="form-select">
+                    <option value="">All Dealers</option>
+                    <% dealers.forEach(function (d) { %>
+                        <option value="<%= d._id %>" <%= filters.dealerId == d._id ? 'selected' : '' %>><%= d.businessName %></option>
+                    <% }); %>
+                </select>
+            </div>
+            <div class="col-md-3 mb-3">
+                <button type="submit" class="btn btn-secondary w-100"><i class="fas fa-filter"></i> Filter</button>
+            </div>
+        </form>
+    </div>
+
+    <div class="card-body border-bottom">
+        <div class="row text-center">
+            <div class="col"><div class="text-muted" style="font-size:.75rem;">ORDERS</div><div class="h4"><%= summary.orderCount %></div></div>
+            <div class="col"><div class="text-muted" style="font-size:.75rem;">ITEMS</div><div class="h4"><%= summary.itemCount %></div></div>
+            <div class="col"><div class="text-muted" style="font-size:.75rem;">GROSS SALES</div><div class="h4"><%= summary.grossSales.toFixed(2) %></div></div>
+            <div class="col"><div class="text-muted" style="font-size:.75rem;">DISCOUNT</div><div class="h4"><%= summary.discount.toFixed(2) %></div></div>
+            <div class="col"><div class="text-muted" style="font-size:.75rem;">TAX</div><div class="h4"><%= summary.tax.toFixed(2) %></div></div>
+            <div class="col"><div class="text-muted" style="font-size:.75rem;">NET SALES</div><div class="h4"><%= summary.netSales.toFixed(2) %></div></div>
+        </div>
+    </div>
+
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-vcenter table-sm mb-0 card-table">
+                <thead>
+                    <tr>
+                        <th>PO Number</th><th>Dealer</th><th>Order Date</th><th>Product</th><th>SKU</th>
+                        <th>Qty</th><th>Unit Price</th><th>Discount</th><th>Tax</th><th>Total</th><th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% if (!rows.length) { %>
+                        <tr><td colspan="11" class="text-center text-muted py-4">No sales in this range</td></tr>
+                    <% } %>
+                    <% rows.forEach(function (r) { %>
+                        <tr>
+                            <td><%= r.poNumber %></td>
+                            <td><%= r.dealerName %></td>
+                            <td><%= r.orderDate ? new Date(r.orderDate).toLocaleDateString() : '-' %></td>
+                            <td><%= r.productName %></td>
+                            <td><%= r.sku || '-' %></td>
+                            <td><%= r.quantity %></td>
+                            <td><%= r.unitPrice %></td>
+                            <td><%= r.discount %></td>
+                            <td><%= r.tax %></td>
+                            <td><%= r.total %></td>
+                            <td><%= r.status.replace(/_/g,' ') %></td>
+                        </tr>
+                    <% }); %>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

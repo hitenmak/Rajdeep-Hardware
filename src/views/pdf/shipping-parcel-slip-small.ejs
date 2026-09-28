@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <title>Shipping Label</title>
+        <style>
+            body {
+                font-family: Arial, sans-serif;
+                font-size: 12px;
+                width: 50mm;
+                height: 40mm;
+                padding: 0;
+                margin: 0;
+            }
+            .label {
+                border: 1px solid #000;
+                width: 100%;
+                margin: auto;
+                padding: 5px;
+            }
+            table {
+                width: 100%;
+                border-collapse: collapse;
+            }
+            td, th {
+                border: 1px solid #000;
+                vertical-align: top;
+            }
+            .header td {
+                border: none;
+            }
+            .bold {
+                font-weight: bold;
+            }
+            .left {
+                text-align: left;
+            }
+            .center {
+                text-align: center;
+            }
+            .right {
+                text-align: right;
+            }
+            .barcode {
+                text-align: center;
+                margin: 5px 0;
+            }
+        </style>
+    </head>
+
+    <body>
+        <div class="label">
+            <table class="header">
+                <tr>
+                    <td class="left">
+                        <img src="<%= extra?.icons?.logo %>" height="18">
+                    </td>
+                    <td class="right" style="vertical-align: bottom; text-align: right;">
+                        <% if(data?.parcel?.packageDetails?.isFragileCharge) { %>
+                            <img src="<%= extra?.icons?.fragileIcon %>" height="18">
+                        <% } %>
+                        <% if(data?.parcel?.charges?.insurance > 0) { %>
+                            <img src="<%= extra?.icons?.insuranceIcon %>" height="18">
+                        <% } %>
+                        <br>
+                        <b class="bold" style="font-size:12px;"><%= data?.parcel?.slip?.slipNumberText %></b>
+                    </td>
+                </tr>
+            </table>
+
+            <table>
+                <tr>
+                    <td style="font-size: 10px;">
+                        <span class="bold">Receiver Address :</span><br>
+                        <%= data?.parcel?.deliveryAddress?.firstName %> <%= data?.parcel?.deliveryAddress?.lastName %>,<br>
+                        <%= data?.parcel?.deliveryAddress?.address1 %>,
+                        <%= data?.parcel?.deliveryAddress?.address2 ? data?.parcel?.deliveryAddress?.address2 + ', ' : '' %>
+                        <%= data?.parcel?.deliveryAddress?.city ? data?.parcel?.deliveryAddress?.city + ', ' : '' %> <%= data?.parcel?.deliveryAddress?.postcode ? data?.parcel?.deliveryAddress?.postcode + ', ' : '' %>
+                        <%= data?.parcel?.deliveryAddress?.state ? data?.parcel?.deliveryAddress?.state + ', ' : '' %> <%= data?.parcel?.deliveryAddress?.country ? data?.parcel?.deliveryAddress?.country + ', ' : '' %>
+                        <br>
+                        <b class="bold">Phone: </b><%= data?.parcel?.deliveryAddress?.phoneCode || '' %><%= data?.parcel?.deliveryAddress?.phone || '' %>
+                    </td>
+                    <td style="font-size: 11px;">
+                        <span class="bold">Parcel Qty</span><br>
+                        <b class="bold"><%= data?.parcel?.packageDetails?.parcelNo %></b>
+
+                        <div class="barcode">
+                            <img src="data:image/png;base64,<%= data?.parcel?.barCode %>" alt="Barcode" height="50" width="70">
+                        </div>
+                    </td>
+                </tr>
+            </table>
+        </div>
+
+        <p style="text-align: left;margin: 0;padding: 0;padding-top: 2px;width: 100%;">
+            <a href="<%= extra?.sendParcelUrl %>" style="color: #000; font-size: 10px;" target="_blank"><%= extra?.sendParcelUrl %></a>
+        </p>
+    </body>
+</html>

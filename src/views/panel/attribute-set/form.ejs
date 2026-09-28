@@ -1,0 +1,94 @@
+<div class="row">
+    <div class="col-md-9">
+        <div class="card card-primary">
+            <div class="card-header">
+                <h3 class="card-title"><%= record ? 'Edit Attribute Set' : 'Add Attribute Set' %></h3>
+            </div>
+            <form action="<%= record ? '/panel/attribute-sets/' + record._id + '/edit' : '/panel/attribute-sets/create' %>" method="POST">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Attribute Set Name <span class="required-mark">*</span></label>
+                            <input type="text" name="name" class="form-control" value="<%= record ? record.name : '' %>" required maxlength="50">
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label class="form-label">Code <span class="required-mark">*</span></label>
+                            <input type="text" name="code" class="form-control" value="<%= record ? record.code : '' %>" required maxlength="50">
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label class="form-label">Status <span class="required-mark">*</span></label>
+                            <select name="status" class="form-select" required>
+                                <option value="ACTIVE" <%= !record || record.status === 'ACTIVE' ? 'selected' : '' %>>Active</option>
+                                <option value="INACTIVE" <%= record && record.status === 'INACTIVE' ? 'selected' : '' %>>Inactive</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Description</label>
+                        <textarea name="description" class="form-control" rows="2" maxlength="1000"><%= record ? (record.description || '') : '' %></textarea>
+                    </div>
+
+                    <hr>
+                    <h5>Attributes in this Set</h5>
+                    <p class="text-muted">Tick the attributes that belong to this set. For each one, you can mark it required, allow it to be used for variations, and optionally restrict which values are offered.</p>
+
+                    <% attributes.forEach(function (a) { %>
+                        <% var item = itemsByAttributeId[a._id] || null; %>
+                        <% var values = valuesByAttributeId[a._id] || []; %>
+                        <div class="card card-outline card-secondary mb-2">
+                            <div class="card-header py-2">
+                                <div class="form-check">
+                                    <input type="checkbox" class="form-check-input attr-item-toggle" id="inc_<%= a._id %>" name="items[<%= a._id %>][included]" value="true" data-target="cfg_<%= a._id %>" <%= item ? 'checked' : '' %>>
+                                    <label class="form-check-label font-weight-bold" for="inc_<%= a._id %>"><%= a.name %> <small class="form-hint">(<%= a.code %>, <%= a.inputType %>)</small></label>
+                                </div>
+                            </div>
+                            <div class="card-body py-2 attr-item-config" id="cfg_<%= a._id %>" <%= item ? '' : 'hidden' %>>
+                                <div class="row">
+                                    <div class="col-md-3">
+                                        <div class="form-check">
+                                            <input type="checkbox" class="form-check-input" id="req_<%= a._id %>" name="items[<%= a._id %>][isRequired]" value="true" <%= item && item.isRequired ? 'checked' : '' %>>
+                                            <label class="form-check-label" for="req_<%= a._id %>">Required</label>
+                                        </div>
+                                    </div>
+                                    <% if (valueBasedInputTypes.includes(a.inputType)) { %>
+                                    <div class="col-md-4">
+                                        <div class="form-check">
+                                            <input type="checkbox" class="form-check-input" id="var_<%= a._id %>" name="items[<%= a._id %>][isVariationAttribute]" value="true" <%= item && item.isVariationAttribute ? 'checked' : '' %>>
+                                            <label class="form-check-label" for="var_<%= a._id %>">Variation Attribute</label>
+                                        </div>
+                                    </div>
+                                    <% } %>
+                                </div>
+                                <% if (values.length) { %>
+                                <div class="mt-2 mb-0">
+                                    <label class="form-label mb-1">Allowed Values <small class="form-hint">(none selected = all values allowed)</small></label>
+                                    <select multiple name="items[<%= a._id %>][allowedValueIds][]" class="form-select" size="<%= Math.min(6, values.length) %>">
+                                        <% values.forEach(function (v) { %>
+                                            <option value="<%= v.id %>" <%= item && (item.allowedValueIds || []).some(function(id){ return id == v.id; }) ? 'selected' : '' %>><%= v.value %></option>
+                                        <% }); %>
+                                    </select>
+                                </div>
+                                <% } else { %>
+                                    <small class="form-hint">This attribute has no predefined values yet.</small>
+                                <% } %>
+                            </div>
+                        </div>
+                    <% }); %>
+                </div>
+                <div class="card-footer">
+                    <button type="submit" class="btn btn-primary">Save Attribute Set</button>
+                    <a href="/panel/attribute-sets" class="btn btn-default">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.querySelectorAll('.attr-item-toggle').forEach(function (el) {
+        el.addEventListener('change', function () {
+            var target = document.getElementById(el.getAttribute('data-target'));
+            if (target) target.hidden = !el.checked;
+        });
+    });
+</script>

@@ -1,0 +1,89 @@
+<div class="row">
+    <div class="col-md-9">
+        <div class="card card-primary">
+            <div class="card-header">
+                <h3 class="card-title"><%= record ? 'Edit Dealer' : 'Add Dealer' %></h3>
+            </div>
+            <form action="<%= record ? '/panel/dealers/' + record._id + '/edit' : '/panel/dealers/create' %>" method="POST">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Dealer Code <span class="required-mark">*</span></label>
+                            <input type="text" name="dealerCode" class="form-control" value="<%= record ? record.dealerCode : '' %>" required maxlength="30" placeholder="e.g. DLR-001">
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Business Name <span class="required-mark">*</span></label>
+                            <input type="text" name="businessName" class="form-control" value="<%= record ? record.businessName : '' %>" required maxlength="100">
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Contact Name</label>
+                            <input type="text" name="contactName" class="form-control" value="<%= record ? (record.contactName || '') : '' %>" maxlength="100">
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Email <span class="required-mark">*</span></label>
+                            <input type="email" name="email" class="form-control" value="<%= record ? record.email : '' %>" required>
+                        </div>
+                        <div class="col-md-2 mb-3">
+                            <label class="form-label">Phone Code</label>
+                            <input type="text" name="phoneCode" class="form-control" value="<%= record ? (record.phoneCode || '+91') : '+91' %>" maxlength="5">
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label class="form-label">Phone</label>
+                            <input type="text" name="phone" class="form-control" value="<%= record ? (record.phone || '') : '' %>" maxlength="20">
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label class="form-label">Tax Number</label>
+                            <input type="text" name="taxNumber" class="form-control" value="<%= record ? (record.taxNumber || '') : '' %>" maxlength="50">
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Address</label>
+                        <textarea name="address" class="form-control" rows="2" maxlength="500"><%= record ? (record.address || '') : '' %></textarea>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">City</label>
+                            <input type="text" name="city" class="form-control" value="<%= record ? (record.city || '') : '' %>" maxlength="50">
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">State</label>
+                            <input type="text" name="state" class="form-control" value="<%= record ? (record.state || '') : '' %>" maxlength="50">
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Country</label>
+                            <input type="text" name="country" class="form-control" value="<%= record ? (record.country || '') : '' %>" maxlength="50">
+                        </div>
+                    </div>
+
+                    <hr>
+                    <h5>Commercial Terms</h5>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Default Discount <small class="form-hint">(%)</small></label>
+                            <input type="number" step="0.01" min="0" max="100" name="defaultDiscount" class="form-control" value="<%= record ? (record.defaultDiscount ?? 0) : 0 %>">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Status <span class="required-mark">*</span></label>
+                            <select name="status" class="form-select" required>
+                                <option value="ACTIVE" <%= !record || record.status === 'ACTIVE' ? 'selected' : '' %>>Active</option>
+                                <option value="INACTIVE" <%= record && record.status === 'INACTIVE' ? 'selected' : '' %>>Inactive</option>
+                            </select>
+                        </div>
+                    </div>
+                    <% if (record) { %>
+                        <small class="form-hint">Approval status is managed separately from the dealer's detail page.</small>
+                    <% } else { %>
+                        <small class="form-hint">New dealers start as <strong>Pending</strong> approval - you can approve them from the detail page after saving.</small>
+                    <% } %>
+                </div>
+                <div class="card-footer">
+                    <button type="submit" class="btn btn-primary">Save Dealer</button>
+                    <a href="<%= record ? '/panel/dealers/' + record._id : '/panel/dealers' %>" class="btn btn-default">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

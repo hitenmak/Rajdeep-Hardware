@@ -1,0 +1,94 @@
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">Dealers</h3>
+        <div class="card-tools">
+            <% if (can('DEALER.CREATE')) { %>
+                <a href="/panel/dealers/create" class="btn btn-sm btn-primary"><i class="fas fa-plus"></i> Add Dealer</a>
+            <% } %>
+        </div>
+    </div>
+
+    <div class="card-body border-bottom">
+        <form method="GET" action="/panel/dealers" class="row align-items-end">
+            <div class="col-md-3 mb-3">
+                <label class="form-label mb-1">Search</label>
+                <input type="text" name="search" value="<%= filters.search || '' %>" class="form-control" placeholder="Business name, code, contact, email">
+            </div>
+            <div class="col-md-2 mb-3">
+                <label class="form-label mb-1">City</label>
+                <input type="text" name="city" value="<%= filters.city || '' %>" class="form-control">
+            </div>
+            <div class="col-md-2 mb-3">
+                <label class="form-label mb-1">Status</label>
+                <select name="status" class="form-select">
+                    <option value="">All Status</option>
+                    <option value="ACTIVE" <%= filters.status === 'ACTIVE' ? 'selected' : '' %>>Active</option>
+                    <option value="INACTIVE" <%= filters.status === 'INACTIVE' ? 'selected' : '' %>>Inactive</option>
+                </select>
+            </div>
+            <div class="col-md-3 mb-3">
+                <label class="form-label mb-1">Approval Status</label>
+                <select name="approvalStatus" class="form-select">
+                    <option value="">All</option>
+                    <% ['PENDING','APPROVED','REJECTED','SUSPENDED'].forEach(function(s){ %>
+                        <option value="<%= s %>" <%= filters.approvalStatus === s ? 'selected' : '' %>><%= s %></option>
+                    <% }); %>
+                </select>
+            </div>
+            <div class="col-md-2 mb-3">
+                <button type="submit" class="btn btn-secondary w-100"><i class="fas fa-filter"></i> Filter</button>
+            </div>
+        </form>
+    </div>
+
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-vcenter mb-0 card-table">
+                <thead>
+                    <tr>
+                        <th>Dealer</th>
+                        <th>Contact</th>
+                        <th>Location</th>
+                        <th>Status</th>
+                        <th>Approval</th>
+                        <th style="width: 130px;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% if (!records || !records.length) { %>
+                        <tr><td colspan="6" class="text-center text-muted py-4">No dealers found</td></tr>
+                    <% } %>
+                    <% var approvalBadge = { PENDING: 'badge-warning', APPROVED: 'badge-success', REJECTED: 'badge-danger', SUSPENDED: 'badge-dark' }; %>
+                    <% records.forEach(function (r) { %>
+                        <tr>
+                            <td>
+                                <a href="/panel/dealers/<%= r._id %>"><%= r.businessName %></a>
+                                <div class="text-muted" style="font-size:.75rem;"><%= r.dealerCode %></div>
+                            </td>
+                            <td><%= r.contactName || '-' %><div class="text-muted" style="font-size:.75rem;"><%= r.email %></div></td>
+                            <td><%= [r.city, r.state].filter(Boolean).join(', ') || '-' %></td>
+                            <td><span class="badge <%= r.status === 'ACTIVE' ? 'badge-success' : 'badge-secondary' %>"><%= r.status %></span></td>
+                            <td><span class="badge <%= approvalBadge[r.approvalStatus] || 'badge-secondary' %>"><%= r.approvalStatus %></span></td>
+                            <td>
+                                <div class="btn-list flex-nowrap">
+                                    <a href="/panel/dealers/<%= r._id %>" class="btn btn-xs btn-outline-info" title="View"><i class="fas fa-eye"></i></a>
+                                    <% if (can('DEALER.UPDATE')) { %>
+                                        <a href="/panel/dealers/<%= r._id %>/edit" class="btn btn-xs btn-outline-primary" title="Edit"><i class="fas fa-edit"></i></a>
+                                    <% } %>
+                                    <% if (can('DEALER.DELETE')) { %>
+                                        <form action="/panel/dealers/<%= r._id %>/delete" method="POST" class="d-inline" onsubmit="return confirm('Delete this dealer?');">
+                                            <button type="submit" class="btn btn-xs btn-outline-danger" title="Delete"><i class="fas fa-trash"></i></button>
+                                        </form>
+                                    <% } %>
+                                </div>
+                            </td>
+                        </tr>
+                    <% }); %>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="card-footer">
+        <%- include('../partials/pagination') %>
+    </div>
+</div>

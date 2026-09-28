@@ -1,0 +1,179 @@
+<form action="<%= record ? '/panel/purchase-orders/' + record._id + '/edit' : '/panel/purchase-orders/create' %>" method="POST" id="poForm">
+<div class="card card-primary">
+    <div class="card-header">
+        <h3 class="card-title"><%= record ? 'Edit Purchase Order ' + record.poNumber : 'Add Purchase Order' %></h3>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label class="form-label">Dealer <span class="required-mark">*</span></label>
+                <select name="dealerId" class="form-select" required>
+                    <option value="">Select dealer</option>
+                    <% dealers.forEach(function (d) { %>
+                        <option value="<%= d._id %>" <%= record && record.dealerId && (record.dealerId._id || record.dealerId).toString() === d._id.toString() ? 'selected' : '' %>><%= d.businessName %> (<%= d.dealerCode %>)</option>
+                    <% }); %>
+                </select>
+            </div>
+            <div class="col-md-3 mb-3">
+                <label class="form-label">Shipping</label>
+                <input type="number" step="0.01" min="0" id="shipping" name="shipping" class="form-control" value="<%= record ? (record.shipping ?? 0) : 0 %>">
+            </div>
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Remarks</label>
+            <textarea name="remarks" class="form-control" rows="2" maxlength="1000"><%= record ? (record.remarks || '') : '' %></textarea>
+        </div>
+
+        <hr>
+        <h5>Items</h5>
+        <div class="table-responsive">
+            <table class="table table-vcenter table-bordered table-sm" id="itemsTable">
+                <thead class="table-light">
+                    <tr>
+                        <th style="min-width:220px;">Product</th>
+                        <th style="width:100px;">Qty</th>
+                        <th style="width:120px;">Unit Price</th>
+                        <th style="width:110px;">Discount</th>
+                        <th style="width:100px;">Tax</th>
+                        <th style="width:120px;">Line Total</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody id="itemsTableBody"></tbody>
+            </table>
+        </div>
+        <button type="button" class="btn btn-sm btn-outline-secondary mb-3" id="addItemBtn"><i class="fas fa-plus"></i> Add Item</button>
+
+        <div class="row justify-content-end">
+            <div class="col-md-4">
+                <dl class="row mb-0">
+                    <dt class="col-6">Subtotal</dt><dd class="col-6 text-end" id="sumSubtotal">0.00</dd>
+                    <dt class="col-6">Discount</dt><dd class="col-6 text-end" id="sumDiscount">0.00</dd>
+                    <dt class="col-6">Tax</dt><dd class="col-6 text-end" id="sumTax">0.00</dd>
+                    <dt class="col-6">Shipping</dt><dd class="col-6 text-end" id="sumShipping">0.00</dd>
+                    <dt class="col-6"><strong>Total</strong></dt><dd class="col-6 text-end"><strong id="sumTotal">0.00</strong></dd>
+                </dl>
+            </div>
+        </div>
+    </div>
+    <div class="card-footer">
+        <button type="submit" class="btn btn-primary">Save Purchase Order</button>
+        <a href="<%= record ? '/panel/purchase-orders/' + record._id : '/panel/purchase-orders' %>" class="btn btn-default">Cancel</a>
+    </div>
+</div>
+</form>
+
+<script>
+    var PRODUCTS = <%- JSON.stringify(products.map(function (p) { return { id: p._id, name: p.name, sku: p.baseSku || '', price: (p.pricing && p.pricing.price) || 0 }; })) %>;
+    <%
+        var existingItems = record ? (record.items || []).map(function (i) {
+            return { productId: (i.productId && i.productId._id ? i.productId._id : i.productId) || '', quantity: i.quantity, unitPrice: i.unitPrice, discount: i.discount, tax: i.tax };
+        }) : [];
+    %>
+    var EXISTING_ITEMS = <%- JSON.stringify(existingItems) %>;
+
+    function el(tag, attrs, html) {
+        var node = document.createElement(tag);
+        Object.keys(attrs || {}).forEach(function (k) { node.setAttribute(k, attrs[k]); });
+        if (html !== undefined) node.innerHTML = html;
+        return node;
+    }
+
+    var itemIndex = 0;
+    function addItemRow(data) {
+        data = data || {};
+        var idx = itemIndex++;
+        var tr = el('tr');
+
+        var productSelect = el('select', { class: 'form-select form-select-sm', name: 'items[' + idx + '][productId]', required: 'required' });
+        productSelect.appendChild(el('option', { value: '' }, 'Select product'));
+        PRODUCTS.forEach(function (p) {
+            var opt = el('option', { value: p.id, 'data-price': p.price, 'data-sku': p.sku, 'data-name': p.name }, p.name + (p.sku ? ' (' + p.sku + ')' : ''));
+            if (data.productId === p.id) opt.selected = true;
+            productSelect.appendChild(opt);
+        });
+        var productTd = el('td'); productTd.appendChild(productSelect); tr.appendChild(productTd);
+
+        var skuInput = el('input', { type: 'hidden', name: 'items[' + idx + '][sku]' });
+        var nameInput = el('input', { type: 'hidden', name: 'items[' + idx + '][productName]' });
+        productTd.appendChild(skuInput); productTd.appendChild(nameInput);
+
+        function numField(field, value, step) {
+            var input = el('input', { type: 'number', step: step || '1', min: '0', class: 'form-control form-control-sm line-input', name: 'items[' + idx + '][' + field + ']', 'data-field': field });
+            input.value = value != null ? value : 0;
+            var td = el('td'); td.appendChild(input);
+            return td;
+        }
+
+        tr.appendChild(numField('quantity', data.quantity != null ? data.quantity : 1));
+        tr.appendChild(numField('unitPrice', data.unitPrice != null ? data.unitPrice : 0, '0.01'));
+        tr.appendChild(numField('discount', data.discount != null ? data.discount : 0, '0.01'));
+        tr.appendChild(numField('tax', data.tax != null ? data.tax : 0, '0.01'));
+
+        var lineTotalTd = el('td', { class: 'line-total text-end' }, '0.00');
+        tr.appendChild(lineTotalTd);
+
+        var removeTd = el('td');
+        var removeBtn = el('button', { type: 'button', class: 'btn btn-xs btn-outline-danger' }, '<i class="fas fa-times"></i>');
+        removeBtn.addEventListener('click', function () { tr.remove(); recalculate(); });
+        removeTd.appendChild(removeBtn);
+        tr.appendChild(removeTd);
+
+        productSelect.addEventListener('change', function () {
+            var opt = productSelect.options[productSelect.selectedIndex];
+            skuInput.value = opt.getAttribute('data-sku') || '';
+            nameInput.value = opt.getAttribute('data-name') || '';
+            var priceInput = tr.querySelector('[data-field=unitPrice]');
+            if (priceInput && !priceInput.value) priceInput.value = opt.getAttribute('data-price') || 0;
+            recalculate();
+        });
+        tr.querySelectorAll('.line-input').forEach(function (input) {
+            input.addEventListener('input', recalculate);
+        });
+
+        document.getElementById('itemsTableBody').appendChild(tr);
+
+        if (data.productId) {
+            var opt = productSelect.querySelector('option[value="' + data.productId + '"]');
+            if (opt) { skuInput.value = opt.getAttribute('data-sku') || ''; nameInput.value = opt.getAttribute('data-name') || ''; }
+        }
+    }
+    document.getElementById('addItemBtn').addEventListener('click', function () { addItemRow(); recalculate(); });
+
+    function recalculate() {
+        var subtotal = 0, discount = 0, tax = 0;
+        document.querySelectorAll('#itemsTableBody tr').forEach(function (tr) {
+            var qty = parseFloat(tr.querySelector('[data-field=quantity]').value) || 0;
+            var price = parseFloat(tr.querySelector('[data-field=unitPrice]').value) || 0;
+            var lineDiscount = parseFloat(tr.querySelector('[data-field=discount]').value) || 0;
+            var lineTax = parseFloat(tr.querySelector('[data-field=tax]').value) || 0;
+            var lineTotal = Math.max(0, (qty * price) - lineDiscount) + lineTax;
+            tr.querySelector('.line-total').textContent = lineTotal.toFixed(2);
+            subtotal += qty * price;
+            discount += lineDiscount;
+            tax += lineTax;
+        });
+        var shipping = parseFloat(document.getElementById('shipping').value) || 0;
+        var total = Math.max(0, subtotal - discount) + tax + shipping;
+        document.getElementById('sumSubtotal').textContent = subtotal.toFixed(2);
+        document.getElementById('sumDiscount').textContent = discount.toFixed(2);
+        document.getElementById('sumTax').textContent = tax.toFixed(2);
+        document.getElementById('sumShipping').textContent = shipping.toFixed(2);
+        document.getElementById('sumTotal').textContent = total.toFixed(2);
+    }
+    document.getElementById('shipping').addEventListener('input', recalculate);
+
+    document.getElementById('poForm').addEventListener('submit', function (e) {
+        if (!document.getElementById('itemsTableBody').children.length) {
+            e.preventDefault();
+            alert('Add at least one item.');
+        }
+    });
+
+    if (EXISTING_ITEMS.length) {
+        EXISTING_ITEMS.forEach(function (i) { addItemRow(i); });
+    } else {
+        addItemRow();
+    }
+    recalculate();
+</script>

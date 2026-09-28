@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <title>Shipping Label</title>
+        <style>
+            body {
+                font-family: Arial, sans-serif;
+                font-size: 12px;
+            }
+            .label {
+                border: 1px solid #000;
+                width: 300px;
+                margin: auto;
+                padding: 5px;
+            }
+            table {
+                width: 100%;
+                border-collapse: collapse;
+            }
+            td, th {
+                border: 1px solid #000;
+                padding: 4px;
+                vertical-align: top;
+            }
+            .header td {
+                border: none;
+            }
+            .bold {
+                font-weight: bold;
+            }
+            .left {
+                text-align: left;
+            }
+            .center {
+                text-align: center;
+            }
+            .right {
+                text-align: right;
+            }
+            .barcode {
+                text-align: center;
+                margin: 5px 0;
+            }
+        </style>
+    </head>
+
+    <body>
+        <div class="label">
+            <table class="header">
+                <tr>
+                    <td class="left">
+                        <img src="<%= extra?.icons?.logo %>" height="38">                        
+                    </td>
+                    <td class="right" style="vertical-align: bottom; text-align: right;">
+                        <% if(data?.parcel?.packageDetails?.isFragileCharge) { %>
+                            <img src="<%= extra?.icons?.fragileIcon %>" height="38">
+                        <% } %>
+                        <% if(data?.parcel?.charges?.insurance > 0) { %>
+                            <img src="<%= extra?.icons?.insuranceIcon %>" height="38">
+                        <% } %>
+                        <br>
+                        <b class="bold" style="font-size:18px;"><%= data?.parcel?.slip?.slipNumberText %></b>
+                    </td>
+                </tr>
+            </table>
+
+            <table>
+                <tr>
+                    <td>
+                        <div style="display: flex; align-items: center;justify-content: space-between;gap: 10px;margin: 0;padding: 0;">
+                            <span><b class="bold">Tracking ID: </b><%= data?.parcel?.trackingID %></span>
+                        </div>
+                        <b class="bold">Order Date: </b><%= data?.parcel?.createdAt %>
+                        <br>
+                        <b class="bold">Estimated Date: </b><%= data?.parcel?.etaDate %>
+                        <br>
+                        <b class="bold">Slip Number: </b><%= data?.parcel?.slip?.number %>
+                    </td>
+                </tr>
+            </table>
+
+            <table>
+                <tr>
+                    <td>
+                        <span class="bold">Receiver Address :</span><br>
+                        <%= data?.parcel?.deliveryAddress?.firstName %> <%= data?.parcel?.deliveryAddress?.lastName %>,<br>
+                        <%= data?.parcel?.deliveryAddress?.address1 %>,
+                        <%= data?.parcel?.deliveryAddress?.address2 ? data?.parcel?.deliveryAddress?.address2 + ', ' : '' %>
+                        <%= data?.parcel?.deliveryAddress?.city ? data?.parcel?.deliveryAddress?.city + ', ' : '' %> <%= data?.parcel?.deliveryAddress?.postcode ? data?.parcel?.deliveryAddress?.postcode + ', ' : '' %>
+                        <%= data?.parcel?.deliveryAddress?.state ? data?.parcel?.deliveryAddress?.state + ', ' : '' %> <%= data?.parcel?.deliveryAddress?.country ? data?.parcel?.deliveryAddress?.country + ', ' : '' %>
+                        <br>
+                        <br>
+                        <b class="bold">Phone: </b><%= data?.parcel?.deliveryAddress?.phone || '' %><%= data?.parcel?.deliveryAddress?.phone || '' %>
+                    </td>
+                </tr>
+            </table>
+
+            <table>
+                <tr class="bold">
+                    <td>Box Size</td>
+                    <td>Parcel Quantity</td>
+                    <td>Delivery Type</td>
+                </tr>
+                <tr>
+                    <td>
+                        <%= data?.parcel?.packageDetails?.packageSize %>
+                        <% if(data?.parcel?.packageDetails?.totalWeightKg) { %>
+                            (<%= data?.parcel?.packageDetails?.totalWeightKg %> kg)
+                        <% } %>
+                    </td>
+                    <td><%= data?.parcel?.packageDetails?.parcelNo %></td>
+                    <td><%= data?.parcel?.packageDetails?.isBuyerPickupCharge ? 'Pick Up': 'Drop Off' %></td>
+                </tr>
+            </table>
+
+            <div class="barcode">
+                <img src="data:image/png;base64,<%= data?.parcel?.barCode %>" alt="Barcode">
+            </div>
+        </div>
+
+        <p style="text-align: right;margin: 0;padding: 0;padding-top: 3px;">
+            <a href="<%= extra?.sendParcelUrl %>" style="color: #000;" target="_blank"><%= extra?.sendParcelUrl %></a>
+        </p>
+    </body>
+</html>

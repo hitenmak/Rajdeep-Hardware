@@ -1,0 +1,90 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
+    <head>
+        <meta charset="UTF-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&family=Russo+One&display=swap" rel="stylesheet">
+        <title><%= title %></title>
+        <style>
+            a:hover {
+                color: #8121CF
+            }
+        </style>
+    </head>
+
+    <body style="font-family:'Poppins', sans-serif;font-size:16px;line-height:1.6;letter-spacing:0.2px;color:#1F1741;box-sizing:border-box !important;margin:0 !important;padding:0 !important;width:100% !important;margin: 0px;padding: 0px;">
+        <table width="100%" bgcolor="#EEF0FF" style="box-sizing:border-box !important;padding: 0px !important;">
+            <tr style="box-sizing:border-box !important;">
+                <td style="box-sizing:border-box !important;">
+                    <table width="640" border="0" cellspacing="0" cellpadding="0" style="box-sizing:border-box !important;padding: 0px 48px!important;margin: auto !important;background-color: #EEF0FF;">
+
+                        <tr style="box-sizing:border-box !important;">
+                            <td style="box-sizing:border-box !important;">
+                                <table width="544" style="box-sizing:border-box !important;display: block;width: 100%;">
+                                    <tbody style="box-sizing:border-box !important;display: table;width: 100%;">
+                                        <tr style="box-sizing:border-box !important;">
+                                            <td style="box-sizing:border-box !important;text-align: left;padding: 30px 0;">
+                                                <a target="_blank" title="<%= config.appName %>" href="<%= config.contactWebUrl %>" style="display: block;color:#1F1741;text-decoration:none;box-sizing:border-box !important;line-height: 1;">
+                                                    <img src="<%= config.logoImg %>" alt="<%= config.appName %>" width="180" height="50" style="box-sizing:border-box !important;">
+                                                </a>
+                                            </td>
+                                            <td style="box-sizing:border-box !important;text-align: right; padding: 30px 0; opacity: 0.7;line-height: 1;">
+                                                <a target="_blank" href="" style="color:#1F1741;text-decoration:none;box-sizing:border-box !important;display: inline-block; margin-left: 12px;">
+                                                    <img src="<%= config.fbImg %>" alt="fb" width="50" height="50" style="box-sizing:border-box !important;">
+                                                </a>
+                                                <a target="_blank" href="" style="color:#1F1741;text-decoration:none;box-sizing:border-box !important;display: inline-block; margin-left: 12px;">
+                                                    <img src="<%= config.instagramImg %>" alt="instagram" width="50" height="50" style="box-sizing:border-box !important;">
+                                                </a>
+                                                <a target="_blank" href="" style="color:#1F1741;text-decoration:none;box-sizing:border-box !important;display: inline-block; margin-left: 12px;">
+                                                    <img src="<%= config.twitterImg %>" alt="twitter" width="50" height="50" style="box-sizing:border-box !important;">
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </td>
+                        </tr>
+
+                        <%- include('../'+viewTemplate+'.ejs') %>
+
+                        <tr style="box-sizing:border-box !important;">
+                            <td style="box-sizing:border-box !important;">
+                                <p style="margin-top:0;margin-bottom: 16px;box-sizing:border-box !important;margin-top: 38px; margin-bottom: 28px;font-size: 14px;">
+                                    Legally at the touch of a button! Download our app for Google & Mac.
+                                </p>
+                                <table style="box-sizing:border-box !important;">
+                                    <tr style="box-sizing:border-box !important;">
+                                        <td style="box-sizing:border-box !important;">
+                                            <a target="_blank" href="" style="color:#1F1741;text-decoration:none;box-sizing:border-box !important;">
+                                                <img src="<%= config.googlePlayBadgeImg %>" alt="google-play-badge" width="108" height="32" style="box-sizing:border-box !important;">
+                                            </a>
+                                        </td>
+                                        <td style="box-sizing:border-box !important;">
+                                            <a target="_blank" href="" style="color:#1F1741;text-decoration:none;box-sizing:border-box !important;">
+                                                <img src="<%= config.appStoreImg %>" alt="app-store" width="125" height="32" style="box-sizing:border-box !important;">
+                                            </a>
+                                        </td>
+                                    </tr>
+                                </table>
+
+                                <p style="margin-top:0;margin-bottom: 16px; box-sizing:border-box !important;margin-top: 21px;">
+                                    Questions or FAQ? Contact us at <a href="mailto:<%= config.contactEmail %>" style="color:#8121CF;box-sizing:border-box !important;text-decoration: underline;"><%= config.contactEmail %></a>.
+                                    If you'd rather not receive this kind of email, Don’t want any more emails from Notable?
+                                </p>
+                                <p style="margin-top:0;margin-bottom: 16px; box-sizing:border-box !important;margin-top: 38px; margin-bottom: 0;">
+                                    <%= config.contactAddress %>
+                                </p>
+                                <p style="margin-top:0;margin-bottom: 16px; box-sizing:border-box !important;">©
+                                    <a href="<%= config.contactWebUrl %>" target="_blank" style="color:#8121CF;text-decoration:none;box-sizing:border-box !important;"><%= config.appName %></a>
+                                </p>
+                            </td>
+                        </tr>
+                    </table>
+                </td>
+            </tr>
+        </table>
+    </body>
+</html>

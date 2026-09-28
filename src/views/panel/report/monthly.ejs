@@ -1,0 +1,36 @@
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">Monthly Report <small class="form-hint">(trailing 12 months)</small></h3>
+        <div class="card-tools">
+            <a href="/panel/reports" class="btn btn-sm btn-default">Back to Reports</a>
+            <% if (can('REPORT.EXPORT')) { %>
+                <a href="/panel/reports/monthly/export" class="btn btn-sm btn-primary"><i class="fas fa-file-export"></i> Export</a>
+            <% } %>
+        </div>
+    </div>
+
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-vcenter table-sm mb-0 card-table">
+                <thead>
+                    <tr>
+                        <th>Month</th><th>Orders</th><th>Sales</th><th>Units Sold</th><th>New Dealers</th><th>Approved Dealers</th><th>Delivered Orders</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% rows.forEach(function (r) { %>
+                        <tr>
+                            <td><%= r.month %></td>
+                            <td><%= r.orders %></td>
+                            <td><%= r.sales %></td>
+                            <td><%= r.unitsSold %></td>
+                            <td><%= r.newDealers %></td>
+                            <td><%= r.approvedDealers %></td>
+                            <td><%= r.deliveredOrders %></td>
+                        </tr>
+                    <% }); %>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

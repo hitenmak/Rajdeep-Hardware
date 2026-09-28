@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-sidebar="folded-hover">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title><%= title %> | Rajdeep Hardware Admin</title>
+
+    <link rel="stylesheet" href="/vendor/fontawesome/css/all.min.css">
+    <link rel="stylesheet" href="/vendor/tabler/css/tabler.min.css">
+    <link rel="stylesheet" href="/resource/css/theme.css">
+    <style>
+        .page-title { font-size: 1.4rem; }
+        .thumb-img { width: 42px; height: 42px; object-fit: cover; border-radius: 4px; background: #f4f6f9; }
+        .thumb-img-placeholder { display: inline-flex; align-items: center; justify-content: center; color: #b7bcc4; font-size: 1rem; }
+        .permission-matrix th, .permission-matrix td { text-align: center; }
+        .permission-matrix td:first-child, .permission-matrix th:first-child { text-align: left; }
+    </style>
+</head>
+<body>
+    <div class="page">
+
+        <%- include('../partials/sidebar') %>
+
+        <div class="page-wrapper">
+            <div class="page-body">
+                <div class="container-fluid">
+                    <div class="page-header d-print-none">
+                        <div class="row align-items-center">
+                            <div class="col">
+                                <% if (typeof eyebrow !== 'undefined' && eyebrow) { %>
+                                    <div class="page-pretitle"><%= eyebrow %></div>
+                                <% } %>
+                                <h2 class="page-title"><%= title %></h2>
+                            </div>
+                        </div>
+                    </div>
+
+                    <%- include('../partials/flash') %>
+                    <%- body %>
+                </div>
+            </div>
+
+            <%- include('../partials/footer') %>
+        </div>
+    </div>
+
+    <script src="/vendor/tabler/js/tabler.min.js"></script>
+</body>
+</html>

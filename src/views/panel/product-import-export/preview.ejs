@@ -1,0 +1,93 @@
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">Import Preview</h3>
+        <div class="card-tools">
+            <a href="/panel/products/import-export" class="btn btn-sm btn-default">Start Over</a>
+        </div>
+    </div>
+    <div class="card-body">
+        <div class="row mb-3">
+            <div class="col-md-3">
+                <div class="stat-tile">
+                    <div class="stat-tile-body">
+                        <span class="stat-tile-label">Total Rows</span>
+                        <span class="stat-tile-value"><%= totalRows %></span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-tile">
+                    <div class="stat-tile-body">
+                        <span class="stat-tile-label">Valid</span>
+                        <span class="stat-tile-value"><%= validRows.length %></span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-tile">
+                    <div class="stat-tile-body">
+                        <span class="stat-tile-label">Products To Create</span>
+                        <span class="stat-tile-value"><%= groupCount %></span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-tile">
+                    <div class="stat-tile-body">
+                        <span class="stat-tile-label">Errors</span>
+                        <span class="stat-tile-value"><%= invalidRows.length %></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <% if (invalidRows.length) { %>
+        <h5>Rows with errors <small class="form-hint">(these will be skipped)</small></h5>
+        <div class="table-responsive mb-3">
+            <table class="table table-vcenter table-sm">
+                <thead><tr><th style="width:70px;">Row</th><th>SKU</th><th>Product Name</th><th>Errors</th></tr></thead>
+                <tbody>
+                    <% invalidRows.forEach(function (r) { %>
+                        <tr>
+                            <td><%= r.row %></td>
+                            <td><%= r.data.sku %></td>
+                            <td><%= r.data.name %></td>
+                            <td class="text-danger"><%= r.errors.join('; ') %></td>
+                        </tr>
+                    <% }); %>
+                </tbody>
+            </table>
+        </div>
+        <a href="/panel/products/import-export/error-report" class="btn btn-sm btn-outline-danger mb-3"><i class="fas fa-file-download"></i> Download Error Report</a>
+        <% } %>
+
+        <% if (validRows.length) { %>
+        <h5>Valid rows <small class="form-hint">(will be imported)</small></h5>
+        <div class="table-responsive mb-3">
+            <table class="table table-vcenter table-sm">
+                <thead><tr><th style="width:70px;">Row</th><th>SKU</th><th>Product Group</th><th>Type</th><th>Product Name</th><th>Category</th><th>Price</th><th>Stock</th><th>Status</th></tr></thead>
+                <tbody>
+                    <% validRows.forEach(function (r) { %>
+                        <tr>
+                            <td><%= r.row %></td>
+                            <td><%= r.data.sku %></td>
+                            <td><%= r.data.productGroup %></td>
+                            <td><span class="badge <%= r.data.productType === 'VARIABLE' ? 'badge-info' : 'badge-secondary' %>"><%= r.data.productType %></span></td>
+                            <td><%= r.data.name %></td>
+                            <td><%= r.data.category %></td>
+                            <td><%= r.data.price %></td>
+                            <td><%= r.data.stock %></td>
+                            <td><%= r.data.status %></td>
+                        </tr>
+                    <% }); %>
+                </tbody>
+            </table>
+        </div>
+        <form action="/panel/products/import-export/confirm" method="POST" onsubmit="return confirm('Import <%= groupCount %> product(s)? This cannot be undone.');">
+            <button type="submit" class="btn btn-primary"><i class="fas fa-check"></i> Confirm Import (<%= groupCount %> product<%= groupCount === 1 ? '' : 's' %>)</button>
+        </form>
+        <% } else { %>
+            <p class="text-muted">No valid rows to import.</p>
+        <% } %>
+    </div>
+</div>

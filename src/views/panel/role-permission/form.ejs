@@ -1,0 +1,66 @@
+<div class="row">
+    <div class="col-md-10">
+        <div class="card card-primary">
+            <div class="card-header">
+                <h3 class="card-title"><%= record ? 'Edit Role' : 'Add Role' %></h3>
+            </div>
+            <form action="<%= record ? '/panel/roles/' + record._id + '/edit' : '/panel/roles/create' %>" method="POST">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Role Name <span class="required-mark">*</span></label>
+                            <input type="text" name="name" class="form-control" value="<%= record ? record.name : '' %>" required maxlength="50">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Department <span class="required-mark">*</span></label>
+                            <select name="department" class="form-select" required <%= record ? 'disabled' : '' %>>
+                                <option value="">Select department</option>
+                                <% departments.forEach(function (d) { %>
+                                    <option value="<%= d.key %>" <%= record && record.department === d.key ? 'selected' : '' %>><%= d.label %></option>
+                                <% }); %>
+                            </select>
+                            <% if (record) { %>
+                                <input type="hidden" name="department" value="<%= record.department %>">
+                                <small class="form-hint">Department cannot be changed after creation.</small>
+                            <% } %>
+                        </div>
+                    </div>
+
+                    <hr>
+                    <h5>Module Permissions</h5>
+                    <div class="table-responsive">
+                        <table class="table table-vcenter table-bordered permission-matrix">
+                            <thead>
+                                <tr>
+                                    <th style="width: 220px;">Module</th>
+                                    <th>Permissions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <% Object.keys(permissionConfig).forEach(function (moduleKey) { %>
+                                    <% const mod = permissionConfig[moduleKey]; %>
+                                    <tr>
+                                        <td><strong><%= mod.label %></strong></td>
+                                        <td>
+                                            <% Object.keys(mod.privileges).forEach(function (privKey) { %>
+                                                <% const priv = mod.privileges[privKey]; %>
+                                                <div class="form-check form-check-inline">
+                                                    <input type="checkbox" class="form-check-input" id="perm_<%= moduleKey %>_<%= privKey %>" name="modules[<%= moduleKey %>][<%= privKey %>]" value="true" <%= priv.isPermitted ? 'checked' : '' %>>
+                                                    <label class="form-check-label" for="perm_<%= moduleKey %>_<%= privKey %>"><%= priv.label %></label>
+                                                </div>
+                                            <% }); %>
+                                        </td>
+                                    </tr>
+                                <% }); %>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <button type="submit" class="btn btn-primary">Save</button>
+                    <a href="/panel/roles" class="btn btn-default">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,68 @@
+<div class="row">
+    <div class="col-md-8">
+        <div class="card card-primary">
+            <div class="card-header">
+                <h3 class="card-title"><%= record ? 'Edit User' : 'Add User' %></h3>
+            </div>
+            <form action="<%= record ? '/panel/users/' + record._id + '/edit' : '/panel/users/create' %>" method="POST">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">First Name <span class="required-mark">*</span></label>
+                            <input type="text" name="firstName" class="form-control" value="<%= record ? record.firstName : '' %>" required maxlength="50">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Last Name <span class="required-mark">*</span></label>
+                            <input type="text" name="lastName" class="form-control" value="<%= record ? record.lastName : '' %>" required maxlength="50">
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Email <span class="required-mark">*</span></label>
+                            <input type="email" name="email" class="form-control" value="<%= record ? record.email : '' %>" required>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label class="form-label">Phone Code <span class="required-mark">*</span></label>
+                            <input type="text" name="phoneCode" class="form-control" value="<%= record ? (record.phoneCode || '+91') : '+91' %>" required maxlength="5">
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label class="form-label">Phone <span class="required-mark">*</span></label>
+                            <input type="text" name="phone" class="form-control" value="<%= record ? record.phone : '' %>" required maxlength="20">
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Role <span class="required-mark">*</span></label>
+                            <select name="rolePermissionId" class="form-select" required>
+                                <option value="">Select role</option>
+                                <% roles.forEach(function (r) { %>
+                                    <option value="<%= r._id %>" <%= record && record.rolePermissionId == r._id ? 'selected' : '' %>><%= r.name %></option>
+                                <% }); %>
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="d-block">Status</label>
+                            <div class="form-check form-switch mt-2">
+                                <input type="checkbox" class="form-check-input" id="isActive" name="isActive" value="true" <%= (!record || record.isActive) ? 'checked' : '' %>>
+                                <label class="form-check-label" for="isActive">Active</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Password <% if (!record) { %><span class="required-mark">*</span><% } %></label>
+                            <input type="password" name="password" class="form-control" <%= record ? '' : 'required' %> minlength="6" maxlength="20" placeholder="<%= record ? 'Leave blank to keep current password' : '' %>">
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <button type="submit" class="btn btn-primary">Save</button>
+                    <a href="/panel/users" class="btn btn-default">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

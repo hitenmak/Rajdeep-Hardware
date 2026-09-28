@@ -1,0 +1,105 @@
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">All Users</h3>
+        <div class="card-tools">
+            <% if (can('USER.CREATE')) { %>
+                <a href="/panel/users/create" class="btn btn-sm btn-primary"><i class="fas fa-plus"></i> Add User</a>
+            <% } %>
+        </div>
+    </div>
+
+    <div class="card-body border-bottom">
+        <form method="GET" action="/panel/users" class="row align-items-end">
+            <div class="col-md-3 mb-3">
+                <label class="form-label mb-1">Search</label>
+                <input type="text" name="search" value="<%= filters.search || '' %>" class="form-control" placeholder="Name, email, phone">
+            </div>
+            <div class="col-md-2 mb-3">
+                <label class="form-label mb-1">Role</label>
+                <select name="role" class="form-select">
+                    <option value="">All Roles</option>
+                    <% roles.forEach(function (r) { %>
+                        <option value="<%= r._id %>" <%= filters.role == r._id ? 'selected' : '' %>><%= r.name %></option>
+                    <% }); %>
+                </select>
+            </div>
+            <div class="col-md-2 mb-3">
+                <label class="form-label mb-1">Status</label>
+                <select name="status" class="form-select">
+                    <option value="">All Status</option>
+                    <option value="ACTIVE" <%= filters.status === 'ACTIVE' ? 'selected' : '' %>>Active</option>
+                    <option value="INACTIVE" <%= filters.status === 'INACTIVE' ? 'selected' : '' %>>Inactive</option>
+                </select>
+            </div>
+            <div class="col-md-2 mb-3">
+                <label class="form-label mb-1">From</label>
+                <input type="date" name="createdFrom" value="<%= filters.createdFrom || '' %>" class="form-control">
+            </div>
+            <div class="col-md-2 mb-3">
+                <label class="form-label mb-1">To</label>
+                <input type="date" name="createdTo" value="<%= filters.createdTo || '' %>" class="form-control">
+            </div>
+            <div class="col-md-1 mb-3">
+                <button type="submit" class="btn btn-secondary w-100"><i class="fas fa-filter"></i> Filter</button>
+            </div>
+        </form>
+    </div>
+
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-vcenter table-striped mb-0 card-table">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Phone</th>
+                        <th>Role</th>
+                        <th>Status</th>
+                        <th>Created At</th>
+                        <th style="width: 160px;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% if (!records || !records.length) { %>
+                        <tr><td colspan="7" class="text-center text-muted py-4">No users found</td></tr>
+                    <% } %>
+                    <% records.forEach(function (r) { %>
+                        <tr>
+                            <td><%= r.firstName %> <%= r.lastName %></td>
+                            <td><%= r.email %></td>
+                            <td><%= r.phoneCode || '' %> <%= r.phone || '' %></td>
+                            <td><%= r.rolePermissionId ? r.rolePermissionId.name : '-' %></td>
+                            <td><span class="badge <%= r.isActive ? 'badge-success' : 'badge-secondary' %>"><%= r.isActive ? 'Active' : 'Inactive' %></span></td>
+                            <td><%= new Date(r.createdAt).toLocaleDateString() %></td>
+                            <td>
+                                <div class="btn-list flex-nowrap">
+                                    <% if (can('USER.VIEW')) { %>
+                                        <a href="/panel/users/<%= r._id %>" class="btn btn-xs btn-outline-info" title="View"><i class="fas fa-eye"></i></a>
+                                    <% } %>
+                                    <% if (can('USER.UPDATE')) { %>
+                                        <a href="/panel/users/<%= r._id %>/edit" class="btn btn-xs btn-outline-primary" title="Edit"><i class="fas fa-edit"></i></a>
+                                    <% } %>
+                                    <% if (can('USER.STATUS')) { %>
+                                        <form action="/panel/users/<%= r._id %>/toggle-active" method="POST" class="d-inline" onsubmit="return confirm('Are you sure?');">
+                                            <button type="submit" class="btn btn-xs btn-outline-warning" title="<%= r.isActive ? 'Deactivate' : 'Activate' %>">
+                                                <i class="fas <%= r.isActive ? 'fa-user-slash' : 'fa-user-check' %>"></i>
+                                            </button>
+                                        </form>
+                                    <% } %>
+                                    <% if (can('USER.DELETE')) { %>
+                                        <form action="/panel/users/<%= r._id %>/delete" method="POST" class="d-inline" onsubmit="return confirm('Delete this user? This cannot be undone.');">
+                                            <button type="submit" class="btn btn-xs btn-outline-danger" title="Delete"><i class="fas fa-trash"></i></button>
+                                        </form>
+                                    <% } %>
+                                </div>
+                            </td>
+                        </tr>
+                    <% }); %>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="card-footer">
+        <%- include('../partials/pagination') %>
+    </div>
+</div>

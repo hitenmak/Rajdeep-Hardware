@@ -1,0 +1,68 @@
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">Attribute Sets</h3>
+        <div class="card-tools">
+            <% if (can('ATTRIBUTE-SET.CREATE')) { %>
+                <a href="/panel/attribute-sets/create" class="btn btn-sm btn-primary"><i class="fas fa-plus"></i> Add Attribute Set</a>
+            <% } %>
+        </div>
+    </div>
+
+    <div class="card-body border-bottom">
+        <form method="GET" action="/panel/attribute-sets" class="row align-items-end">
+            <div class="col-md-4 mb-3">
+                <label class="form-label mb-1">Search</label>
+                <input type="text" name="search" value="<%= filters.search || '' %>" class="form-control" placeholder="Attribute set name">
+            </div>
+            <div class="col-md-2 mb-3">
+                <button type="submit" class="btn btn-secondary w-100"><i class="fas fa-filter"></i> Filter</button>
+            </div>
+        </form>
+    </div>
+
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-vcenter table-striped mb-0 card-table">
+                <thead>
+                    <tr>
+                        <th>Attribute Set</th>
+                        <th>Code</th>
+                        <th>Attributes</th>
+                        <th>Categories Using It</th>
+                        <th>Status</th>
+                        <th style="width: 100px;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% if (!records || !records.length) { %>
+                        <tr><td colspan="6" class="text-center text-muted py-4">No attribute sets found</td></tr>
+                    <% } %>
+                    <% records.forEach(function (r) { %>
+                        <tr>
+                            <td><%= r.name %></td>
+                            <td><code><%= r.code %></code></td>
+                            <td><%= (r.items || []).length %></td>
+                            <td><%= countMap[r._id] || 0 %></td>
+                            <td><span class="badge <%= r.status === 'ACTIVE' ? 'badge-success' : 'badge-secondary' %>"><%= r.status %></span></td>
+                            <td>
+                                <div class="btn-list flex-nowrap">
+                                    <% if (can('ATTRIBUTE-SET.UPDATE')) { %>
+                                        <a href="/panel/attribute-sets/<%= r._id %>/edit" class="btn btn-xs btn-outline-primary" title="Edit"><i class="fas fa-edit"></i></a>
+                                    <% } %>
+                                    <% if (can('ATTRIBUTE-SET.DELETE')) { %>
+                                        <form action="/panel/attribute-sets/<%= r._id %>/delete" method="POST" class="d-inline" onsubmit="return confirm('Delete this attribute set?');">
+                                            <button type="submit" class="btn btn-xs btn-outline-danger" title="Delete"><i class="fas fa-trash"></i></button>
+                                        </form>
+                                    <% } %>
+                                </div>
+                            </td>
+                        </tr>
+                    <% }); %>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="card-footer">
+        <%- include('../partials/pagination') %>
+    </div>
+</div>

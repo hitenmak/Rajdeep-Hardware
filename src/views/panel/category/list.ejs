@@ -1,0 +1,106 @@
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">Categories</h3>
+        <div class="card-tools">
+            <% if (can('CATEGORY.CREATE')) { %>
+                <a href="/panel/categories/create" class="btn btn-sm btn-primary"><i class="fas fa-plus"></i> Add Category</a>
+            <% } %>
+        </div>
+    </div>
+
+    <div class="card-body border-bottom">
+        <form method="GET" action="/panel/categories" class="row align-items-end">
+            <div class="col-md-3 mb-3">
+                <label class="form-label mb-1">Search</label>
+                <input type="text" name="search" value="<%= filters.search || '' %>" class="form-control" placeholder="Category name">
+            </div>
+            <div class="col-md-3 mb-3">
+                <label class="form-label mb-1">Parent</label>
+                <select name="parentId" class="form-select">
+                    <option value="">All</option>
+                    <% parentOptions.forEach(function (p) { %>
+                        <option value="<%= p.id %>" <%= filters.parentId == p.id ? 'selected' : '' %>><%= p.label %></option>
+                    <% }); %>
+                </select>
+            </div>
+            <div class="col-md-2 mb-3">
+                <label class="form-label mb-1">Level</label>
+                <select name="level" class="form-select">
+                    <option value="">All Levels</option>
+                    <% levelLabels.forEach(function (label, i) { %>
+                        <option value="<%= i %>" <%= String(filters.level) === String(i) ? 'selected' : '' %>><%= label %></option>
+                    <% }); %>
+                </select>
+            </div>
+            <div class="col-md-2 mb-3">
+                <label class="form-label mb-1">Status</label>
+                <select name="status" class="form-select">
+                    <option value="">All Status</option>
+                    <option value="ACTIVE" <%= filters.status === 'ACTIVE' ? 'selected' : '' %>>Active</option>
+                    <option value="INACTIVE" <%= filters.status === 'INACTIVE' ? 'selected' : '' %>>Inactive</option>
+                </select>
+            </div>
+            <div class="col-md-2 mb-3">
+                <button type="submit" class="btn btn-secondary w-100"><i class="fas fa-filter"></i> Filter</button>
+            </div>
+        </form>
+    </div>
+
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-vcenter table-striped mb-0 card-table">
+                <thead>
+                    <tr>
+                        <th style="width: 60px;">Image</th>
+                        <th>Name</th>
+                        <th>Level</th>
+                        <th>Parent</th>
+                        <th>Attribute Set</th>
+                        <th>Sort Order</th>
+                        <th>Status</th>
+                        <th style="width: 120px;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% if (!records || !records.length) { %>
+                        <tr><td colspan="8" class="text-center text-muted py-4">No categories found</td></tr>
+                    <% } %>
+                    <% var levelBadgeClass = ['badge-primary', 'badge-info', 'badge-secondary']; %>
+                    <% records.forEach(function (r) { %>
+                        <% var imgUrl = mediaUrl(r.image); %>
+                        <tr>
+                            <td>
+                                <% if (imgUrl) { %>
+                                    <img src="<%= imgUrl %>" class="thumb-img" onerror="this.style.visibility='hidden'">
+                                <% } else { %>
+                                    <span class="thumb-img thumb-img-placeholder" title="No image"><i class="fas fa-image"></i></span>
+                                <% } %>
+                            </td>
+                            <td><%= r.name %></td>
+                            <td><span class="badge <%= levelBadgeClass[r.level] || 'badge-secondary' %>"><%= levelLabels[r.level] || r.level %></span></td>
+                            <td><%= r.parentId ? r.parentId.name : '-' %></td>
+                            <td><%= r.level === 0 ? (r.attributeSetId ? r.attributeSetId.name : '-') : (r.attributeMode || 'INHERIT') %></td>
+                            <td><%= r.sortOrder %></td>
+                            <td><span class="badge <%= r.status === 'ACTIVE' ? 'badge-success' : 'badge-secondary' %>"><%= r.status %></span></td>
+                            <td>
+                                <div class="btn-list flex-nowrap">
+                                    <% if (can('CATEGORY.UPDATE')) { %>
+                                        <a href="/panel/categories/<%= r._id %>/edit" class="btn btn-xs btn-outline-primary" title="Edit"><i class="fas fa-edit"></i></a>
+                                    <% } %>
+                                    <% if (can('CATEGORY.DELETE')) { %>
+                                        <form action="/panel/categories/<%= r._id %>/delete" method="POST" class="d-inline" onsubmit="return confirm('Delete this category?');">
+                                            <button type="submit" class="btn btn-xs btn-outline-danger" title="Delete"><i class="fas fa-trash"></i></button>
+                                        </form>
+                                    <% } %>
+                                </div>
+                            </td>
+                        </tr>
+                    <% }); %>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="card-footer">
+        <%- include('../partials/pagination') %>
+    </div>
+</div>

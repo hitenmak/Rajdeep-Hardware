@@ -1,0 +1,145 @@
+<%
+    var MODULE_LABELS = { 'PRODUCT': 'Product', 'DEALER': 'Dealer', 'PURCHASE-ORDER': 'Purchase Order', 'CATEGORY': 'Category', 'SETTING': 'Settings' };
+    var MODULE_BADGES = { 'PRODUCT': 'badge-info', 'DEALER': 'badge-purple', 'PURCHASE-ORDER': 'badge-warning', 'CATEGORY': 'badge-teal', 'SETTING': 'badge-secondary' };
+    var ACTION_BADGES = { 'CREATE': 'badge-success', 'UPDATE': 'badge-info', 'DELETE': 'badge-danger', 'STATUS_CHANGE': 'badge-warning', 'BULK_PRICE_ADJUSTMENT': 'badge-warning' };
+%>
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">Activity Log</h3>
+    </div>
+
+    <div class="card-body border-bottom">
+        <form method="GET" action="/panel/activity-log" class="row align-items-end">
+            <div class="col-md-2 mb-3">
+                <label class="form-label mb-1">Search</label>
+                <input type="text" name="search" value="<%= filters.search || '' %>" class="form-control" placeholder="Entity, user, or summary">
+            </div>
+            <div class="col-md-2 mb-3">
+                <label class="form-label mb-1">Module</label>
+                <select name="module" class="form-select">
+                    <option value="">All</option>
+                    <% modules.forEach(function (m) { %>
+                        <option value="<%= m %>" <%= filters.module === m ? 'selected' : '' %>><%= MODULE_LABELS[m] || m %></option>
+                    <% }); %>
+                </select>
+            </div>
+            <div class="col-md-2 mb-3">
+                <label class="form-label mb-1">Action</label>
+                <select name="action" class="form-select">
+                    <option value="">All</option>
+                    <% actions.forEach(function (a) { %>
+                        <option value="<%= a %>" <%= filters.action === a ? 'selected' : '' %>><%= a.replace(/_/g, ' ') %></option>
+                    <% }); %>
+                </select>
+            </div>
+            <div class="col-md-2 mb-3">
+                <label class="form-label mb-1">From</label>
+                <input type="date" name="dateFrom" value="<%= filters.dateFrom || '' %>" class="form-control">
+            </div>
+            <div class="col-md-2 mb-3">
+                <label class="form-label mb-1">To</label>
+                <input type="date" name="dateTo" value="<%= filters.dateTo || '' %>" class="form-control">
+            </div>
+            <div class="col-md-2 mb-3">
+                <button type="submit" class="btn btn-secondary w-100"><i class="fas fa-filter"></i> Filter</button>
+            </div>
+        </form>
+    </div>
+
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-vcenter table-striped mb-0 card-table">
+                <thead>
+                    <tr>
+                        <th style="width: 30px;"></th>
+                        <th>Date/Time</th>
+                        <th>User</th>
+                        <th>Module</th>
+                        <th>Entity</th>
+                        <th>Action</th>
+                        <th>Summary</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% if (!records || !records.length) { %>
+                        <tr><td colspan="7" class="text-center text-muted py-4">No activity found</td></tr>
+                    <% } %>
+                    <% records.forEach(function (r, i) { %>
+                        <% var hasChanges = r.changes && r.changes.length; %>
+                        <tr class="<%= hasChanges ? 'activity-row-clickable' : '' %>" <% if (hasChanges) { %>data-target="activity-changes-<%= i %>" role="button" tabindex="0"<% } %>>
+                            <td>
+                                <% if (hasChanges) { %>
+                                    <button type="button" class="btn btn-icon btn-sm btn-ghost-secondary activity-toggle" data-target="activity-changes-<%= i %>" title="Show changes"><i class="fas fa-chevron-right"></i></button>
+                                <% } %>
+                            </td>
+                            <td class="text-nowrap"><%= new Date(r.createdAt).toLocaleString() %></td>
+                            <td>
+                                <%= r.performedByName || 'System' %>
+                                <% if (r.performedByRole) { %><div class="small text-secondary"><%= r.performedByRole %></div><% } %>
+                            </td>
+                            <td><span class="badge <%= MODULE_BADGES[r.module] || 'badge-secondary' %>"><%= MODULE_LABELS[r.module] || r.module %></span></td>
+                            <td><%= r.entityLabel || '-' %></td>
+                            <td><span class="badge <%= ACTION_BADGES[r.action] || 'badge-secondary' %>"><%= (r.action || '').replace(/_/g, ' ') %></span></td>
+                            <td class="text-truncate" style="max-width: 320px;">
+                                <%= r.summary %>
+                                <% if (hasChanges) { %> <i class="fas fa-chevron-right small text-muted activity-inline-chevron" data-target="activity-changes-<%= i %>"></i><% } %>
+                            </td>
+                        </tr>
+                        <% if (hasChanges) { %>
+                            <tr class="activity-changes-row" id="activity-changes-<%= i %>" hidden>
+                                <td></td>
+                                <td colspan="6">
+                                    <div class="mb-2"><strong>What changed</strong> <small class="text-muted">(<%= r.changes.length %> field<%= r.changes.length > 1 ? 's' : '' %>)</small></div>
+                                    <table class="table table-sm table-vcenter mb-0 border">
+                                        <thead><tr><th>Field</th><th>Old Value</th><th>New Value</th></tr></thead>
+                                        <tbody>
+                                            <% r.changes.forEach(function (c) { %>
+                                                <tr>
+                                                    <td><%= c.label %></td>
+                                                    <td class="text-muted"><del><%= c.oldValue ?? '-' %></del></td>
+                                                    <td><strong><%= c.newValue ?? '-' %></strong></td>
+                                                </tr>
+                                            <% }); %>
+                                        </tbody>
+                                    </table>
+                                </td>
+                            </tr>
+                        <% } %>
+                    <% }); %>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="card-footer">
+        <%- include('../partials/pagination') %>
+    </div>
+</div>
+
+<style>
+    .activity-row-clickable { cursor: pointer; }
+    .activity-row-clickable:hover { background: var(--tblr-bg-surface-secondary, #f4f6f9); }
+</style>
+
+<script>
+    // One listener per row covers everything inside it (the leftmost icon
+    // button, the inline chevron next to the summary text, or just clicking
+    // the row itself) via normal event bubbling - so it works no matter
+    // which column happens to be scrolled into view, without any risk of a
+    // click inside the row double-firing through two separate listeners.
+    function toggleActivityChanges(targetId) {
+        var detailsRow = document.getElementById(targetId);
+        if (!detailsRow) return;
+        detailsRow.hidden = !detailsRow.hidden;
+        document.querySelectorAll('tr[data-target="' + targetId + '"] i.fas').forEach(function (icon) {
+            icon.classList.toggle('fa-chevron-right', detailsRow.hidden);
+            icon.classList.toggle('fa-chevron-down', !detailsRow.hidden);
+        });
+    }
+
+    document.querySelectorAll('tr.activity-row-clickable').forEach(function (row) {
+        row.addEventListener('click', function () { toggleActivityChanges(row.getAttribute('data-target')); });
+        row.addEventListener('keydown', function (e) {
+            if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleActivityChanges(row.getAttribute('data-target')); }
+        });
+    });
+</script>

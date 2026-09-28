@@ -1,0 +1,87 @@
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">Purchase Orders</h3>
+        <div class="card-tools">
+            <% if (can('PURCHASE-ORDER.CREATE')) { %>
+                <a href="/panel/purchase-orders/create" class="btn btn-sm btn-primary"><i class="fas fa-plus"></i> Add Purchase Order</a>
+            <% } %>
+        </div>
+    </div>
+
+    <div class="card-body border-bottom">
+        <form method="GET" action="/panel/purchase-orders" class="row align-items-end">
+            <div class="col-md-3 mb-3">
+                <label class="form-label mb-1">Search</label>
+                <input type="text" name="search" value="<%= filters.search || '' %>" class="form-control" placeholder="PO number">
+            </div>
+            <div class="col-md-3 mb-3">
+                <label class="form-label mb-1">Dealer</label>
+                <select name="dealerId" class="form-select">
+                    <option value="">All Dealers</option>
+                    <% dealers.forEach(function (d) { %>
+                        <option value="<%= d._id %>" <%= filters.dealerId == d._id ? 'selected' : '' %>><%= d.businessName %></option>
+                    <% }); %>
+                </select>
+            </div>
+            <div class="col-md-3 mb-3">
+                <label class="form-label mb-1">Status</label>
+                <select name="status" class="form-select">
+                    <option value="">All Status</option>
+                    <% statuses.forEach(function (s) { %>
+                        <option value="<%= s %>" <%= filters.status === s ? 'selected' : '' %>><%= s.replace(/_/g,' ') %></option>
+                    <% }); %>
+                </select>
+            </div>
+            <div class="col-md-2 mb-3">
+                <button type="submit" class="btn btn-secondary w-100"><i class="fas fa-filter"></i> Filter</button>
+            </div>
+        </form>
+    </div>
+
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-vcenter mb-0 card-table">
+                <thead>
+                    <tr>
+                        <th>PO Number</th>
+                        <th>Dealer</th>
+                        <th>Order Date</th>
+                        <th>Total</th>
+                        <th>Status</th>
+                        <th>Package Manager</th>
+                        <th>Delivery Manager</th>
+                        <th style="width: 90px;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% if (!records || !records.length) { %>
+                        <tr><td colspan="8" class="text-center text-muted py-4">No purchase orders found</td></tr>
+                    <% } %>
+                    <% var statusBadge = { PENDING: 'badge-secondary', UNDER_REVIEW: 'badge-info', PARTIALLY_APPROVED: 'badge-warning', APPROVED: 'badge-success', PACKING: 'badge-info', READY_FOR_DELIVERY: 'badge-info', OUT_FOR_DELIVERY: 'badge-warning', DELIVERED: 'badge-success', REJECTED: 'badge-danger', CANCELLED: 'badge-dark' }; %>
+                    <% records.forEach(function (r) { %>
+                        <tr>
+                            <td><a href="/panel/purchase-orders/<%= r._id %>"><%= r.poNumber %></a></td>
+                            <td><%= r.dealerId ? r.dealerId.businessName : '-' %></td>
+                            <td><%= r.orderDate ? new Date(r.orderDate).toLocaleDateString() : '-' %></td>
+                            <td><%= r.totalAmount %></td>
+                            <td><span class="badge <%= statusBadge[r.status] || 'badge-secondary' %>"><%= r.status.replace(/_/g,' ') %></span></td>
+                            <td><%= r.assignedPackageManagerId ? (r.assignedPackageManagerId.firstName + ' ' + r.assignedPackageManagerId.lastName) : '-' %></td>
+                            <td><%= r.assignedDeliveryManagerId ? (r.assignedDeliveryManagerId.firstName + ' ' + r.assignedDeliveryManagerId.lastName) : '-' %></td>
+                            <td>
+                                <div class="btn-list flex-nowrap">
+                                    <a href="/panel/purchase-orders/<%= r._id %>" class="btn btn-xs btn-outline-info" title="View"><i class="fas fa-eye"></i></a>
+                                    <% if (can('PURCHASE-ORDER.UPDATE') && r.status === 'PENDING') { %>
+                                        <a href="/panel/purchase-orders/<%= r._id %>/edit" class="btn btn-xs btn-outline-primary" title="Edit"><i class="fas fa-edit"></i></a>
+                                    <% } %>
+                                </div>
+                            </td>
+                        </tr>
+                    <% }); %>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="card-footer">
+        <%- include('../partials/pagination') %>
+    </div>
+</div>

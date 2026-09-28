@@ -1,0 +1,68 @@
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">Login Audit</h3>
+    </div>
+
+    <div class="card-body border-bottom">
+        <form method="GET" action="/panel/login-audit" class="row align-items-end">
+            <div class="col-md-3 mb-3">
+                <label class="form-label mb-1">Search</label>
+                <input type="text" name="search" value="<%= filters.search || '' %>" class="form-control" placeholder="Email">
+            </div>
+            <div class="col-md-2 mb-3">
+                <label class="form-label mb-1">Status</label>
+                <select name="status" class="form-select">
+                    <option value="">All</option>
+                    <option value="SUCCESS" <%= filters.status === 'SUCCESS' ? 'selected' : '' %>>Success</option>
+                    <option value="FAILED" <%= filters.status === 'FAILED' ? 'selected' : '' %>>Failed</option>
+                </select>
+            </div>
+            <div class="col-md-2 mb-3">
+                <label class="form-label mb-1">From</label>
+                <input type="date" name="dateFrom" value="<%= filters.dateFrom || '' %>" class="form-control">
+            </div>
+            <div class="col-md-2 mb-3">
+                <label class="form-label mb-1">To</label>
+                <input type="date" name="dateTo" value="<%= filters.dateTo || '' %>" class="form-control">
+            </div>
+            <div class="col-md-2 mb-3">
+                <button type="submit" class="btn btn-secondary w-100"><i class="fas fa-filter"></i> Filter</button>
+            </div>
+        </form>
+    </div>
+
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-vcenter table-striped mb-0 card-table">
+                <thead>
+                    <tr>
+                        <th>Email</th>
+                        <th>Status</th>
+                        <th>Reason</th>
+                        <th>IP Address</th>
+                        <th>User Agent</th>
+                        <th>Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% if (!records || !records.length) { %>
+                        <tr><td colspan="6" class="text-center text-muted py-4">No login activity found</td></tr>
+                    <% } %>
+                    <% records.forEach(function (r) { %>
+                        <tr>
+                            <td><%= r.email %></td>
+                            <td><span class="badge <%= r.status === 'SUCCESS' ? 'badge-success' : 'badge-danger' %>"><%= r.status %></span></td>
+                            <td><%= r.reason || '-' %></td>
+                            <td><%= r.ipAddress || '-' %></td>
+                            <td class="text-truncate" style="max-width: 220px;"><%= r.userAgent || '-' %></td>
+                            <td><%= new Date(r.createdAt).toLocaleString() %></td>
+                        </tr>
+                    <% }); %>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="card-footer">
+        <%- include('../partials/pagination') %>
+    </div>
+</div>

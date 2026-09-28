@@ -1,0 +1,90 @@
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">Full Details Update Preview</h3>
+        <div class="card-tools">
+            <a href="/panel/products/stock-update" class="btn btn-sm btn-default">Start Over</a>
+        </div>
+    </div>
+    <div class="card-body">
+        <div class="row mb-3">
+            <div class="col-md-4">
+                <div class="stat-tile">
+                    <div class="stat-tile-body">
+                        <span class="stat-tile-label">Total Rows</span>
+                        <span class="stat-tile-value"><%= totalRows %></span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="stat-tile">
+                    <div class="stat-tile-body">
+                        <span class="stat-tile-label">Valid</span>
+                        <span class="stat-tile-value"><%= validRows.length %></span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="stat-tile">
+                    <div class="stat-tile-body">
+                        <span class="stat-tile-label">Errors</span>
+                        <span class="stat-tile-value"><%= invalidRows.length %></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <% if (invalidRows.length) { %>
+        <h5>Rows with errors <small class="form-hint">(these will be skipped)</small></h5>
+        <div class="table-responsive mb-3">
+            <table class="table table-vcenter table-sm">
+                <thead><tr><th style="width:70px;">Row</th><th>SKU</th><th>Errors</th></tr></thead>
+                <tbody>
+                    <% invalidRows.forEach(function (r) { %>
+                        <tr>
+                            <td><%= r.row %></td>
+                            <td><%= r.data.sku %></td>
+                            <td class="text-danger"><%= r.errors.join('; ') %></td>
+                        </tr>
+                    <% }); %>
+                </tbody>
+            </table>
+        </div>
+        <a href="/panel/products/stock-update/full-error-report" class="btn btn-sm btn-outline-danger mb-3"><i class="fas fa-file-download"></i> Download Error Report</a>
+        <% } %>
+
+        <% if (validRows.length) { %>
+        <h5>Valid rows <small class="form-hint">(will be updated)</small></h5>
+        <div class="table-responsive mb-3">
+            <table class="table table-vcenter table-sm">
+                <thead><tr><th style="width:70px;">Row</th><th>SKU</th><th>Product</th><th>Type</th><th>Fields Changed</th></tr></thead>
+                <tbody>
+                    <% validRows.forEach(function (r) { %>
+                        <% var changed = []; %>
+                        <% if (r.data.nameProvided) changed.push('Name'); %>
+                        <% if (r.data.brandProvided) changed.push('Brand'); %>
+                        <% if (r.data.descriptionProvided) changed.push('Description'); %>
+                        <% if (r.data.statusProvided) changed.push('Status &rarr; ' + r.data.status); %>
+                        <% if (r.data.imageUrlProvided) changed.push('Image'); %>
+                        <% if (r.data.priceProvided) changed.push('Price &rarr; ' + r.data.price); %>
+                        <% if (r.data.stockProvided) changed.push('Stock &rarr; ' + r.data.stock); %>
+                        <% if (r.data.lowStockProvided) changed.push('Low Stock Threshold &rarr; ' + r.data.lowStockThreshold); %>
+                        <% if (r.data.attributeRows && r.data.attributeRows.length) changed.push(r.data.attributeRows.length + ' attribute(s)'); %>
+                        <tr>
+                            <td><%= r.row %></td>
+                            <td><%= r.data.sku %></td>
+                            <td><%= r.data.productName %></td>
+                            <td><span class="badge <%= r.data.productType === 'VARIABLE' ? 'badge-info' : 'badge-secondary' %>"><%= r.data.productType %></span></td>
+                            <td><%- changed.join(', ') || '<span class="text-muted">-</span>' %></td>
+                        </tr>
+                    <% }); %>
+                </tbody>
+            </table>
+        </div>
+        <form action="/panel/products/stock-update/full-confirm" method="POST" onsubmit="return confirm('Update <%= validRows.length %> row(s)? This cannot be undone.');">
+            <button type="submit" class="btn btn-primary"><i class="fas fa-check"></i> Confirm Update (<%= validRows.length %> row<%= validRows.length === 1 ? '' : 's' %>)</button>
+        </form>
+        <% } else { %>
+            <p class="text-muted">No valid rows to update.</p>
+        <% } %>
+    </div>
+</div>

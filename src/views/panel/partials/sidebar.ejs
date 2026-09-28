@@ -1,0 +1,212 @@
+<aside class="navbar navbar-vertical navbar-expand-lg">
+    <div class="container-fluid">
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#sidebar-menu" aria-controls="sidebar-menu" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <h1 class="navbar-brand">
+            <a href="/panel/dashboard" class="d-flex align-items-center">
+                <img src="<%= branding?.logoMark || '/resource/img/folded_logo.png' %>" alt="Rajdeep Hardware" class="navbar-brand-image brand-logo-mark" onerror="this.style.visibility='hidden'">
+                <% if (branding?.logoFull) { %>
+                    <img src="<%= branding.logoFull %>" alt="Rajdeep Hardware" class="brand-wordmark-image" onerror="this.style.visibility='hidden'">
+                <% } else { %>
+                    <span class="brand-wordmark">Rajdeep Hardware</span>
+                <% } %>
+            </a>
+        </h1>
+
+        <div class="collapse navbar-collapse" id="sidebar-menu">
+            <ul class="navbar-nav pt-lg-3">
+
+                <li class="nav-item mt-2">
+                    <div class="nav-section-title">Overview</div>
+                </li>
+                <li class="nav-item <%= currentPath === '/panel/dashboard' ? 'active' : '' %>">
+                    <a href="/panel/dashboard" class="nav-link">
+                        <span class="nav-link-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-dashboard"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M10 13a2 2 0 1 0 4 0a2 2 0 1 0 -4 0" /><path d="M13.45 11.55l2.05 -2.05" /><path d="M6.4 20a9 9 0 1 1 11.2 0l-11.2 0" /></svg>
+                        </span>
+                        <span class="nav-link-title">Dashboard</span>
+                    </a>
+                </li>
+
+                <% if (can('CATEGORY.VIEW') || can('ATTRIBUTE.VIEW') || can('ATTRIBUTE-SET.VIEW') || can('PRODUCT.VIEW')) { %>
+                <li class="nav-item mt-2">
+                    <div class="nav-section-title">Catalogue</div>
+                </li>
+                <% if (can('PRODUCT.VIEW')) { %>
+                <li class="nav-item <%= currentPath.startsWith('/panel/products') ? 'active' : '' %>">
+                    <a href="/panel/products" class="nav-link">
+                        <span class="nav-link-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-package"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M12 3l8 4.5l0 9l-8 4.5l-8 -4.5l0 -9l8 -4.5" /><path d="M12 12l8 -4.5" /><path d="M12 12l0 9" /><path d="M12 12l-8 -4.5" /><path d="M16 5.25l-8 4.5" /></svg>
+                        </span>
+                        <span class="nav-link-title">Products</span>
+                    </a>
+                </li>
+                <% } %>
+                <% if (can('PRODUCT.IMPORT') || can('PRODUCT.EXPORT')) { %>
+                <li class="nav-item <%= currentPath.startsWith('/panel/products/import-export') ? 'active' : '' %>">
+                    <a href="/panel/products/import-export" class="nav-link">
+                        <span class="nav-link-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-transfer"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M20 10h-16l5.5 -6" /><path d="M4 14h16l-5.5 6" /></svg>
+                        </span>
+                        <span class="nav-link-title">Product Import / Export</span>
+                    </a>
+                </li>
+                <% } %>
+                <% if (can('PRODUCT.UPDATE')) { %>
+                <li class="nav-item <%= currentPath.startsWith('/panel/products/stock-update') ? 'active' : '' %>">
+                    <a href="/panel/products/stock-update" class="nav-link">
+                        <span class="nav-link-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-tags"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M3 8v4.172a2 2 0 0 0 .586 1.414l5.71 5.71a2.41 2.41 0 0 0 3.408 0l3.592 -3.592a2.41 2.41 0 0 0 0 -3.408l-5.71 -5.71a2 2 0 0 0 -1.414 -.586h-4.172a2 2 0 0 0 -2 2" /><path d="M18 19l1.592 -1.592a4.82 4.82 0 0 0 0 -6.816l-4.592 -4.592" /><path d="M7 10h-.01" /></svg>
+                        </span>
+                        <span class="nav-link-title">Bulk Product Update</span>
+                    </a>
+                </li>
+                <% } %>
+                <% if (can('CATEGORY.VIEW')) { %>
+                <li class="nav-item <%= currentPath.startsWith('/panel/categories') ? 'active' : '' %>">
+                    <a href="/panel/categories" class="nav-link">
+                        <span class="nav-link-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-category"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M4 4h6v6h-6l0 -6" /><path d="M14 4h6v6h-6l0 -6" /><path d="M4 14h6v6h-6l0 -6" /><path d="M14 17a3 3 0 1 0 6 0a3 3 0 1 0 -6 0" /></svg>
+                        </span>
+                        <span class="nav-link-title">Categories</span>
+                    </a>
+                </li>
+                <% } %>
+                <% if (can('ATTRIBUTE.VIEW')) { %>
+                <li class="nav-item <%= currentPath.startsWith('/panel/attributes') ? 'active' : '' %>">
+                    <a href="/panel/attributes" class="nav-link">
+                        <span class="nav-link-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-adjustments-horizontal"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M12 6a2 2 0 1 0 4 0a2 2 0 1 0 -4 0" /><path d="M4 6l8 0" /><path d="M16 6l4 0" /><path d="M6 12a2 2 0 1 0 4 0a2 2 0 1 0 -4 0" /><path d="M4 12l2 0" /><path d="M10 12l10 0" /><path d="M15 18a2 2 0 1 0 4 0a2 2 0 1 0 -4 0" /><path d="M4 18l11 0" /><path d="M19 18l1 0" /></svg>
+                        </span>
+                        <span class="nav-link-title">Attributes</span>
+                    </a>
+                </li>
+                <% } %>
+                <% if (can('ATTRIBUTE-SET.VIEW')) { %>
+                <li class="nav-item <%= currentPath.startsWith('/panel/attribute-sets') ? 'active' : '' %>">
+                    <a href="/panel/attribute-sets" class="nav-link">
+                        <span class="nav-link-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-stack"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M12 6l-8 4l8 4l8 -4l-8 -4" /><path d="M4 14l8 4l8 -4" /></svg>
+                        </span>
+                        <span class="nav-link-title">Attribute Sets</span>
+                    </a>
+                </li>
+                <% } %>
+                <% } %>
+
+                <% if (can('DEALER.VIEW')) { %>
+                <li class="nav-item mt-2">
+                    <div class="nav-section-title">Dealers</div>
+                </li>
+                <li class="nav-item <%= currentPath.startsWith('/panel/dealers') ? 'active' : '' %>">
+                    <a href="/panel/dealers" class="nav-link">
+                        <span class="nav-link-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-building-store"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M3 21l18 0" /><path d="M3 7v1a3 3 0 0 0 6 0v-1m0 1a3 3 0 0 0 6 0v-1m0 1a3 3 0 0 0 6 0v-1h-18l2 -4h14l2 4" /><path d="M5 21l0 -10.15" /><path d="M19 21l0 -10.15" /><path d="M9 21v-4a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v4" /></svg>
+                        </span>
+                        <span class="nav-link-title">Dealers</span>
+                    </a>
+                </li>
+                <% } %>
+
+                <% if (can('PURCHASE-ORDER.VIEW')) { %>
+                <li class="nav-item <%= currentPath.startsWith('/panel/purchase-orders') ? 'active' : '' %>">
+                    <a href="/panel/purchase-orders" class="nav-link">
+                        <span class="nav-link-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-file-invoice"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M14 3v4a1 1 0 0 0 1 1h4" /><path d="M17 21h-10a2 2 0 0 1 -2 -2v-14a2 2 0 0 1 2 -2h7l5 5v11a2 2 0 0 1 -2 2" /><path d="M9 7l1 0" /><path d="M9 13l6 0" /><path d="M13 17l2 0" /></svg>
+                        </span>
+                        <span class="nav-link-title">Purchase Orders</span>
+                    </a>
+                </li>
+                <% } %>
+
+                <% if (can('REPORT.VIEW')) { %>
+                <li class="nav-item <%= currentPath.startsWith('/panel/reports') ? 'active' : '' %>">
+                    <a href="/panel/reports" class="nav-link">
+                        <span class="nav-link-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-chart-line"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M4 19l16 0" /><path d="M4 15l4 -6l4 2l4 -5l4 4" /></svg>
+                        </span>
+                        <span class="nav-link-title">Reports</span>
+                    </a>
+                </li>
+                <% } %>
+
+                <% if (can('USER.VIEW') || can('ROLE-PERMISSION.VIEW') || can('LOGIN-AUDIT.VIEW') || can('ACTIVITY-LOG.VIEW') || can('SETTING.VIEW')) { %>
+                <li class="nav-item mt-2">
+                    <div class="nav-section-title">Administration</div>
+                </li>
+                <% if (can('USER.VIEW')) { %>
+                <li class="nav-item <%= currentPath.startsWith('/panel/users') ? 'active' : '' %>">
+                    <a href="/panel/users" class="nav-link">
+                        <span class="nav-link-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-users"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M5 7a4 4 0 1 0 8 0a4 4 0 1 0 -8 0" /><path d="M3 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /><path d="M21 21v-2a4 4 0 0 0 -3 -3.85" /></svg>
+                        </span>
+                        <span class="nav-link-title">Users</span>
+                    </a>
+                </li>
+                <% } %>
+                <% if (can('ROLE-PERMISSION.VIEW')) { %>
+                <li class="nav-item <%= currentPath.startsWith('/panel/roles') ? 'active' : '' %>">
+                    <a href="/panel/roles" class="nav-link">
+                        <span class="nav-link-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-shield-lock"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M12 3a12 12 0 0 0 8.5 3a12 12 0 0 1 -8.5 15a12 12 0 0 1 -8.5 -15a12 12 0 0 0 8.5 -3" /><path d="M11 11a1 1 0 1 0 2 0a1 1 0 1 0 -2 0" /><path d="M12 12l0 2.5" /></svg>
+                        </span>
+                        <span class="nav-link-title">Roles &amp; Permissions</span>
+                    </a>
+                </li>
+                <% } %>
+                <% if (can('LOGIN-AUDIT.VIEW')) { %>
+                <li class="nav-item <%= currentPath.startsWith('/panel/login-audit') ? 'active' : '' %>">
+                    <a href="/panel/login-audit" class="nav-link">
+                        <span class="nav-link-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-history"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M12 8l0 4l2 2" /><path d="M3.05 11a9 9 0 1 1 .5 4m-.5 5v-5h5" /></svg>
+                        </span>
+                        <span class="nav-link-title">Login Audit</span>
+                    </a>
+                </li>
+                <% } %>
+                <% if (can('ACTIVITY-LOG.VIEW')) { %>
+                <li class="nav-item <%= currentPath.startsWith('/panel/activity-log') ? 'active' : '' %>">
+                    <a href="/panel/activity-log" class="nav-link">
+                        <span class="nav-link-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-list-details"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M13 5h8" /><path d="M13 9h5" /><path d="M13 15h8" /><path d="M13 19h5" /><path d="M3 4m0 1a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v4a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1z" /><path d="M3 14m0 1a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v4a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1z" /></svg>
+                        </span>
+                        <span class="nav-link-title">Activity Log</span>
+                    </a>
+                </li>
+                <% } %>
+                <% if (can('SETTING.VIEW')) { %>
+                <li class="nav-item <%= currentPath.startsWith('/panel/settings') ? 'active' : '' %>">
+                    <a href="/panel/settings" class="nav-link">
+                        <span class="nav-link-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-settings"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M10.325 4.317c.426 -1.756 2.924 -1.756 3.35 0a1.724 1.724 0 0 0 2.573 1.066c1.543 -.94 3.31 .826 2.37 2.37a1.724 1.724 0 0 0 1.065 2.572c1.756 .426 1.756 2.924 0 3.35a1.724 1.724 0 0 0 -1.066 2.573c.94 1.543 -.826 3.31 -2.37 2.37a1.724 1.724 0 0 0 -2.572 1.065c-.426 1.756 -2.924 1.756 -3.35 0a1.724 1.724 0 0 0 -2.573 -1.066c-1.543 .94 -3.31 -.826 -2.37 -2.37a1.724 1.724 0 0 0 -1.065 -2.572c-1.756 -.426 -1.756 -2.924 0 -3.35a1.724 1.724 0 0 0 1.066 -2.573c-.94 -1.543 .826 -3.31 2.37 -2.37c1 .608 2.296 .07 2.572 -1.065" /><path d="M9 12a3 3 0 1 0 6 0a3 3 0 0 0 -6 0" /></svg>
+                        </span>
+                        <span class="nav-link-title">Settings</span>
+                    </a>
+                </li>
+                <% } %>
+                <% } %>
+
+            </ul>
+        </div>
+    </div>
+
+    <div class="navbar-footer">
+        <ul class="navbar-nav">
+            <li class="nav-item dropup">
+                <a href="#" class="nav-link" data-bs-toggle="dropdown" aria-label="Open user menu">
+                    <span class="avatar avatar-sm avatar-rounded" style="background: linear-gradient(135deg,#b8863a,#d9a441); color:#fff; font-weight:700;">
+                        <%= (authUser?.firstName || '?').charAt(0).toUpperCase() %><%= (authUser?.lastName || '').charAt(0).toUpperCase() %>
+                    </span>
+                    <span class="nav-link-title">
+                        <%= authUser?.firstName || '' %> <%= authUser?.lastName || '' %>
+                        <div class="small text-secondary"><%= rolePermission?.name || '' %></div>
+                    </span>
+                </a>
+                <div class="dropdown-menu dropdown-menu-arrow">
+                    <%- include('./user-menu-items') %>
+                </div>
+            </li>
+        </ul>
+    </div>
+</aside>

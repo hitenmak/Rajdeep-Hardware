@@ -1,0 +1,221 @@
+<% var statusBadge = { PENDING: 'badge-secondary', UNDER_REVIEW: 'badge-info', PARTIALLY_APPROVED: 'badge-warning', APPROVED: 'badge-success', PACKING: 'badge-info', READY_FOR_DELIVERY: 'badge-info', OUT_FOR_DELIVERY: 'badge-warning', DELIVERED: 'badge-success', REJECTED: 'badge-danger', CANCELLED: 'badge-dark' }; %>
+<% var canReview = (isMaster || department === 'ACCOUNT_MANAGER') && ['PENDING', 'UNDER_REVIEW'].includes(record.status); %>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card card-primary">
+            <div class="card-header">
+                <h3 class="card-title"><%= record.poNumber %> <span class="badge <%= statusBadge[record.status] || 'badge-secondary' %> ms-1"><%= record.status.replace(/_/g,' ') %></span></h3>
+                <div class="card-tools">
+                    <% if (can('PURCHASE-ORDER.UPDATE') && record.status === 'PENDING') { %>
+                        <a href="/panel/purchase-orders/<%= record._id %>/edit" class="btn btn-sm btn-primary"><i class="fas fa-edit"></i> Edit</a>
+                    <% } %>
+                    <% if (can('PURCHASE-ORDER.DELETE') && record.status === 'PENDING') { %>
+                        <form action="/panel/purchase-orders/<%= record._id %>/delete" method="POST" class="d-inline" onsubmit="return confirm('Delete this purchase order?');">
+                            <button type="submit" class="btn btn-sm btn-outline-danger"><i class="fas fa-trash"></i> Delete</button>
+                        </form>
+                    <% } %>
+                    <a href="/panel/purchase-orders" class="btn btn-sm btn-default">Back</a>
+                </div>
+            </div>
+            <div class="card-body">
+                <dl class="row mb-0">
+                    <dt class="col-sm-3">Dealer</dt><dd class="col-sm-9"><%= record.dealerId ? record.dealerId.businessName : '-' %></dd>
+                    <dt class="col-sm-3">Order Date</dt><dd class="col-sm-9"><%= record.orderDate ? new Date(record.orderDate).toLocaleString() : '-' %></dd>
+                    <dt class="col-sm-3">Remarks</dt><dd class="col-sm-9"><%= record.remarks || '-' %></dd>
+                    <dt class="col-sm-3">Package Manager</dt><dd class="col-sm-9"><%= record.assignedPackageManagerId ? (record.assignedPackageManagerId.firstName + ' ' + record.assignedPackageManagerId.lastName) : 'Not assigned' %></dd>
+                    <dt class="col-sm-3">Delivery Manager</dt><dd class="col-sm-9"><%= record.assignedDeliveryManagerId ? (record.assignedDeliveryManagerId.firstName + ' ' + record.assignedDeliveryManagerId.lastName) : 'Not assigned' %></dd>
+                </dl>
+            </div>
+        </div>
+
+        <form action="/panel/purchase-orders/<%= record._id %>/review" method="POST" id="reviewForm">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Items</h3>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-vcenter table-sm mb-0 card-table">
+                        <thead>
+                            <tr>
+                                <th>Product</th>
+                                <th>SKU</th>
+                                <th>Qty</th>
+                                <th>Unit Price</th>
+                                <th>Total</th>
+                                <% if (canReview || record.status !== 'PENDING') { %><th>Approved</th><th>Rejected</th><% } %>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% (record.items || []).forEach(function (item, idx) { %>
+                                <tr>
+                                    <td><%= item.productName %></td>
+                                    <td><%= item.sku || '-' %></td>
+                                    <td><%= item.quantity %></td>
+                                    <td><%= item.unitPrice %></td>
+                                    <td><%= item.total %></td>
+                                    <% if (canReview) { %>
+                                        <td style="width:100px;">
+                                            <input type="number" min="0" max="<%= item.quantity %>" class="form-control form-control-sm" name="decisions[<%= idx %>][approvedQuantity]" value="<%= item.approvedQuantity != null ? item.approvedQuantity : item.quantity %>">
+                                        </td>
+                                        <td class="text-muted"><%= item.rejectedQuantity != null ? item.rejectedQuantity : 0 %></td>
+                                    <% } else if (record.status !== 'PENDING') { %>
+                                        <td><%= item.approvedQuantity != null ? item.approvedQuantity : '-' %></td>
+                                        <td><%= item.rejectedQuantity != null ? item.rejectedQuantity : '-' %></td>
+                                    <% } %>
+                                </tr>
+                            <% }); %>
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <td colspan="4" class="text-end"><strong>Subtotal</strong></td><td><%= record.subtotal %></td><% if (canReview || record.status !== 'PENDING') { %><td colspan="2"></td><% } %>
+                            </tr>
+                            <tr>
+                                <td colspan="4" class="text-end">Discount</td><td><%= record.discount %></td><% if (canReview || record.status !== 'PENDING') { %><td colspan="2"></td><% } %>
+                            </tr>
+                            <tr>
+                                <td colspan="4" class="text-end">Tax</td><td><%= record.tax %></td><% if (canReview || record.status !== 'PENDING') { %><td colspan="2"></td><% } %>
+                            </tr>
+                            <tr>
+                                <td colspan="4" class="text-end">Shipping</td><td><%= record.shipping %></td><% if (canReview || record.status !== 'PENDING') { %><td colspan="2"></td><% } %>
+                            </tr>
+                            <tr>
+                                <td colspan="4" class="text-end"><strong>Total</strong></td><td><strong><%= record.totalAmount %></strong></td><% if (canReview || record.status !== 'PENDING') { %><td colspan="2"></td><% } %>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+            <% if (canReview) { %>
+            <div class="card-footer">
+                <label class="form-label mb-1" style="font-size:.75rem;">Review Remarks</label>
+                <textarea name="remarks" class="form-control form-control-sm mb-2" rows="2" placeholder="Optional remarks for this decision"></textarea>
+                <small class="form-hint d-block mb-2">Set each item's approved quantity below its requested quantity to partially approve, or 0 to reject it. Saving computes the order's overall status automatically.</small>
+                <button type="submit" class="btn btn-primary" onclick="return confirm('Save this review decision?');"><i class="fas fa-check"></i> Save Review Decision</button>
+            </div>
+            <% } %>
+        </div>
+        </form>
+    </div>
+
+    <div class="col-md-4">
+        <% if (Object.keys(transitions || {}).length) { %>
+        <div class="card">
+            <div class="card-header"><h3 class="card-title">Status</h3></div>
+            <div class="card-body d-flex flex-column gap-2">
+                <% Object.keys(transitions).forEach(function (nextStatus) { %>
+                    <% var allowedDepartments = transitions[nextStatus]; %>
+                    <% var allowed = isMaster || allowedDepartments.includes(department); %>
+                    <% if (allowed && can('PURCHASE-ORDER.CHANGE-STATUS')) { %>
+                    <form action="/panel/purchase-orders/<%= record._id %>/status" method="POST" onsubmit="return confirm('Change status to <%= nextStatus.replace(/_/g,' ') %>?');">
+                        <input type="hidden" name="status" value="<%= nextStatus %>">
+                        <button type="submit" class="btn btn-outline-primary w-100"><%= nextStatus.replace(/_/g,' ') %></button>
+                    </form>
+                    <% } %>
+                <% }); %>
+            </div>
+        </div>
+        <% } %>
+
+        <% if (can('ASSIGN-PACKAGE-MANAGER.ASSIGN') && ['APPROVED','PARTIALLY_APPROVED'].includes(record.status)) { %>
+        <div class="card">
+            <div class="card-header"><h3 class="card-title">Package Manager</h3></div>
+            <div class="card-body">
+                <form action="/panel/purchase-orders/<%= record._id %>/assign-package-manager" method="POST" class="d-flex gap-2">
+                    <select name="userId" class="form-select form-select-sm" required>
+                        <option value="">Select user</option>
+                        <% packageManagers.forEach(function (u) { %>
+                            <option value="<%= u._id %>" <%= record.assignedPackageManagerId && record.assignedPackageManagerId._id.toString() === u._id.toString() ? 'selected' : '' %>><%= u.firstName %> <%= u.lastName %></option>
+                        <% }); %>
+                    </select>
+                    <button type="submit" class="btn btn-sm btn-primary">Assign</button>
+                </form>
+            </div>
+        </div>
+        <% } %>
+
+        <% if (can('ASSIGN-DELIVERY-MANAGER.ASSIGN') && record.assignedPackageManagerId) { %>
+        <div class="card">
+            <div class="card-header"><h3 class="card-title">Delivery Manager</h3></div>
+            <div class="card-body">
+                <form action="/panel/purchase-orders/<%= record._id %>/assign-delivery-manager" method="POST" class="d-flex gap-2">
+                    <select name="userId" class="form-select form-select-sm" required>
+                        <option value="">Select user</option>
+                        <% deliveryManagers.forEach(function (u) { %>
+                            <option value="<%= u._id %>" <%= record.assignedDeliveryManagerId && record.assignedDeliveryManagerId._id.toString() === u._id.toString() ? 'selected' : '' %>><%= u.firstName %> <%= u.lastName %></option>
+                        <% }); %>
+                    </select>
+                    <button type="submit" class="btn btn-sm btn-primary">Assign</button>
+                </form>
+            </div>
+        </div>
+        <% } %>
+
+        <% if (can('DELIVERY-PICTURE.VIEW')) { %>
+        <div class="card">
+            <div class="card-header"><h3 class="card-title">Delivery Photos</h3></div>
+            <div class="card-body">
+                <% if (!deliveryImages.length) { %>
+                    <p class="text-muted mb-2">No delivery photos yet</p>
+                <% } %>
+                <div class="d-flex flex-wrap gap-2 mb-2">
+                    <% deliveryImages.forEach(function (img) { %>
+                        <div style="position:relative;">
+                            <img src="<%= img.url %>" style="width:80px;height:80px;object-fit:cover;border-radius:4px;border:1px solid #dee2e6;" onerror="this.style.visibility='hidden'">
+                            <% if (can('DELIVERY-PICTURE.UPLOAD')) { %>
+                            <form action="/panel/purchase-orders/<%= record._id %>/delivery-images/<%= img._id %>/delete" method="POST" onsubmit="return confirm('Remove this photo?');" style="position:absolute;top:-6px;right:-6px;">
+                                <button type="submit" class="btn btn-xs btn-outline-danger" style="width:22px;height:22px;padding:0;"><i class="fas fa-times" style="font-size:.6rem;"></i></button>
+                            </form>
+                            <% } %>
+                        </div>
+                    <% }); %>
+                </div>
+                <% if (can('DELIVERY-PICTURE.UPLOAD')) { %>
+                <form action="/panel/purchase-orders/<%= record._id %>/delivery-images" method="POST" enctype="multipart/form-data">
+                    <input type="file" name="image" class="form-control form-control-sm mb-2" accept="image/*" required>
+                    <input type="text" name="remarks" class="form-control form-control-sm mb-2" placeholder="Remarks (optional)">
+                    <button type="submit" class="btn btn-sm btn-primary w-100"><i class="fas fa-upload"></i> Upload</button>
+                </form>
+                <% } %>
+            </div>
+        </div>
+        <% } %>
+
+        <div class="card">
+            <div class="card-header"><h3 class="card-title">Status History</h3></div>
+            <div class="card-body p-0">
+                <ul class="list-group list-group-flush">
+                    <% if (!statusHistory.length) { %>
+                        <li class="list-group-item text-muted">No history yet</li>
+                    <% } %>
+                    <% statusHistory.forEach(function (h) { %>
+                        <li class="list-group-item">
+                            <strong><%= h.oldStatus ? h.oldStatus.replace(/_/g,' ') + ' &rarr; ' : '' %><%= h.newStatus.replace(/_/g,' ') %></strong><br>
+                            <% if (h.remarks) { %><small><%= h.remarks %></small><br><% } %>
+                            <small class="form-hint"><%= new Date(h.createdAt).toLocaleString() %> <% if (h.changedBy) { %>by <%= h.changedBy.firstName %> <%= h.changedBy.lastName %><% } %></small>
+                        </li>
+                    <% }); %>
+                </ul>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header"><h3 class="card-title">Assignment History</h3></div>
+            <div class="card-body p-0">
+                <ul class="list-group list-group-flush">
+                    <% if (!assignmentHistory.length) { %>
+                        <li class="list-group-item text-muted">No assignments yet</li>
+                    <% } %>
+                    <% assignmentHistory.forEach(function (a) { %>
+                        <li class="list-group-item">
+                            <strong><%= a.assignmentType.replace(/_/g,' ') %></strong>: <%= a.userId ? (a.userId.firstName + ' ' + a.userId.lastName) : '-' %>
+                            <span class="badge <%= a.status === 'ACTIVE' ? 'badge-success' : 'badge-secondary' %> ms-1"><%= a.status %></span><br>
+                            <small class="form-hint"><%= new Date(a.assignedAt).toLocaleString() %> <% if (a.assignedBy) { %>by <%= a.assignedBy.firstName %> <%= a.assignedBy.lastName %><% } %></small>
+                        </li>
+                    <% }); %>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>

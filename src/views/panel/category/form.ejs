@@ -1,0 +1,185 @@
+<div class="row">
+    <div class="col-md-8">
+        <div class="card card-primary">
+            <div class="card-header">
+                <h3 class="card-title"><%= record ? 'Edit Category' : 'Add Category' %></h3>
+            </div>
+            <form action="<%= record ? '/panel/categories/' + record._id + '/edit' : '/panel/categories/create' %>" method="POST" enctype="multipart/form-data">
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="form-label">Parent Category</label>
+                        <select name="parentId" id="parentId" class="form-select">
+                            <option value="">&mdash; None (top level) &mdash;</option>
+                            <% parentOptions.forEach(function (p) { %>
+                                <option value="<%= p.id %>" <%= record && record.parentId == p.id ? 'selected' : '' %>><%= p.label %></option>
+                            <% }); %>
+                        </select>
+                        <small class="form-hint">Leave unset for a top-level Category. A category can be nested at most 3 levels deep (Category &gt; Subcategory &gt; Sub-subcategory).</small>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-8 mb-3">
+                            <label class="form-label">Name <span class="required-mark">*</span></label>
+                            <input type="text" name="name" class="form-control" value="<%= record ? record.name : '' %>" required maxlength="50">
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Code</label>
+                            <input type="text" name="code" class="form-control" value="<%= record ? (record.code || '') : '' %>" maxlength="50">
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Description</label>
+                        <textarea name="description" class="form-control" rows="3" maxlength="1000"><%= record ? (record.description || '') : '' %></textarea>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Sort Order</label>
+                            <input type="number" name="sortOrder" class="form-control" value="<%= record ? record.sortOrder : 0 %>">
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Status <span class="required-mark">*</span></label>
+                            <select name="status" class="form-select" required>
+                                <option value="ACTIVE" <%= !record || record.status === 'ACTIVE' ? 'selected' : '' %>>Active</option>
+                                <option value="INACTIVE" <%= record && record.status === 'INACTIVE' ? 'selected' : '' %>>Inactive</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Image</label>
+                        <input type="file" name="image" class="form-control" accept="image/*">
+                        <% if (mediaUrl) { %>
+                            <div class="mt-2"><img src="<%= mediaUrl %>" class="thumb-img" style="width:80px;height:80px;" onerror="this.style.visibility='hidden'"></div>
+                        <% } %>
+                    </div>
+
+                    <hr>
+                    <h5>Attribute Set</h5>
+                    <div class="mb-3">
+                        <label class="form-label">Attribute Set</label>
+                        <select name="attributeSetId" id="attributeSetId" class="form-select">
+                            <option value="">None</option>
+                            <% attributeSets.forEach(function (s) { %>
+                                <option value="<%= s.id %>" <%= record && record.attributeSetId == s.id ? 'selected' : '' %>><%= s.name %></option>
+                            <% }); %>
+                        </select>
+                        <small class="form-hint">Products (or children, depending on their own attribute behaviour below) will only show attributes from the selected set.</small>
+                    </div>
+                    <div id="attributeSetPreview" class="mb-3"></div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <div class="form-check form-switch">
+                                <input type="checkbox" class="form-check-input" id="allowSubcategoryAttributeAdditions" name="allowSubcategoryAttributeAdditions" value="true" <%= (!record || record.allowSubcategoryAttributeAdditions !== false) ? 'checked' : '' %>>
+                                <label class="form-check-label" for="allowSubcategoryAttributeAdditions">Allow child-category attribute additions/overrides</label>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="form-check form-switch">
+                                <input type="checkbox" class="form-check-input" id="allowProductLevelAttributeAdditions" name="allowProductLevelAttributeAdditions" value="true" <%= (!record || record.allowProductLevelAttributeAdditions !== false) ? 'checked' : '' %>>
+                                <label class="form-check-label" for="allowProductLevelAttributeAdditions">Allow product-level attribute additions</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="childAttributeBehaviour">
+                        <hr>
+                        <h5>Attribute Behaviour</h5>
+                        <div class="mb-3">
+                            <% var mode = record ? (record.attributeMode || 'INHERIT') : 'INHERIT'; %>
+                            <div class="form-check">
+                                <input type="radio" id="mode_inherit" name="attributeMode" value="INHERIT" class="form-check-input attr-mode-radio" <%= mode === 'INHERIT' ? 'checked' : '' %>>
+                                <label class="form-check-label" for="mode_inherit">Inherit parent's attribute set</label>
+                            </div>
+                            <div class="form-check">
+                                <input type="radio" id="mode_add" name="attributeMode" value="ADD" class="form-check-input attr-mode-radio" <%= mode === 'ADD' ? 'checked' : '' %>>
+                                <label class="form-check-label" for="mode_add">Inherit + add extra attributes</label>
+                            </div>
+                            <div class="form-check">
+                                <input type="radio" id="mode_override" name="attributeMode" value="OVERRIDE" class="form-check-input attr-mode-radio" <%= mode === 'OVERRIDE' ? 'checked' : '' %>>
+                                <label class="form-check-label" for="mode_override">Override with a different attribute set</label>
+                            </div>
+                        </div>
+
+                        <div class="mb-3 attr-mode-section" data-mode="ADD">
+                            <label class="form-label">Additional Attributes</label>
+                            <div class="border rounded p-2" style="max-height: 200px; overflow-y: auto;">
+                                <% attributes.forEach(function (a) { %>
+                                    <div class="form-check">
+                                        <input type="checkbox" class="form-check-input" id="add_attr_<%= a.id %>" name="additionalAttributeIds" value="<%= a.id %>" <%= record && (record.additionalAttributeIds || []).some(function(id){ return id == a.id; }) ? 'checked' : '' %>>
+                                        <label class="form-check-label" for="add_attr_<%= a.id %>"><%= a.name %></label>
+                                    </div>
+                                <% }); %>
+                            </div>
+                        </div>
+
+                        <div class="mb-3 attr-mode-section" data-mode="OVERRIDE">
+                            <label class="form-label">Override Attribute Set</label>
+                            <select name="overrideAttributeSetId" class="form-select">
+                                <option value="">Select attribute set</option>
+                                <% attributeSets.forEach(function (s) { %>
+                                    <option value="<%= s.id %>" <%= record && record.overrideAttributeSetId == s.id ? 'selected' : '' %>><%= s.name %></option>
+                                <% }); %>
+                            </select>
+                        </div>
+                    </div>
+
+                    <hr>
+                    <h5>SEO</h5>
+                    <div class="mb-3">
+                        <label class="form-label">SEO Title</label>
+                        <input type="text" name="seoTitle" class="form-control" value="<%= record ? (record.seoTitle || '') : '' %>" maxlength="50">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">SEO Description</label>
+                        <textarea name="seoDescription" class="form-control" rows="2" maxlength="1000"><%= record ? (record.seoDescription || '') : '' %></textarea>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <button type="submit" class="btn btn-primary">Save</button>
+                    <a href="/panel/categories" class="btn btn-default">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    var ATTRIBUTE_SETS = <%- JSON.stringify(attributeSets) %>;
+
+    function renderAttributeSetPreview() {
+        var id = document.getElementById('attributeSetId').value;
+        var box = document.getElementById('attributeSetPreview');
+        var set = ATTRIBUTE_SETS.find(function (s) { return s.id === id; });
+
+        if (!set || !set.attributeNames.length) { box.innerHTML = ''; return; }
+
+        box.innerHTML = '<div class="callout callout-info py-2 mb-0"><strong>Attributes in this set:</strong><br>' +
+            set.attributeNames.map(function (n) { return '<span class="badge badge-info me-1 mt-1">' + n + '</span>'; }).join('') +
+            '</div>';
+    }
+
+    function toggleAttrModeSections() {
+        var checked = document.querySelector('.attr-mode-radio:checked');
+        var mode = checked ? checked.value : 'INHERIT';
+        document.querySelectorAll('.attr-mode-section').forEach(function (el) {
+            el.hidden = el.getAttribute('data-mode') !== mode;
+        });
+    }
+
+    // "Attribute Behaviour" (inherit/add/override) only makes sense once this
+    // category has a parent to inherit from - a top-level category has nothing
+    // to inherit, so it always keeps INHERIT (a no-op) and the section hides.
+    function toggleParentDependentSections() {
+        var hasParent = !!document.getElementById('parentId').value;
+        document.getElementById('childAttributeBehaviour').hidden = !hasParent;
+    }
+
+    document.getElementById('attributeSetId').addEventListener('change', renderAttributeSetPreview);
+    document.getElementById('parentId').addEventListener('change', toggleParentDependentSections);
+    document.querySelectorAll('.attr-mode-radio').forEach(function (el) {
+        el.addEventListener('change', toggleAttrModeSections);
+    });
+
+    renderAttributeSetPreview();
+    toggleAttrModeSections();
+    toggleParentDependentSections();
+</script>

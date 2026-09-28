@@ -1,0 +1,38 @@
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">Import Summary</h3>
+        <div class="card-tools">
+            <a href="/panel/products/import-export" class="btn btn-sm btn-default">Import Another File</a>
+            <a href="/panel/products" class="btn btn-sm btn-primary">Go to Products</a>
+        </div>
+    </div>
+    <div class="card-body">
+        <p><span class="badge badge-success">Created</span> <%= created %> product<%= created === 1 ? '' : 's' %></p>
+        <% if (typeof warnings !== 'undefined' && warnings.length) { %>
+            <p><span class="badge badge-warning">Warning</span> <%= warnings.length %> row<%= warnings.length === 1 ? '' : 's' %> saved, but with an issue (e.g. an image could not be downloaded)</p>
+            <div class="table-responsive mb-3">
+                <table class="table table-vcenter table-sm">
+                    <thead><tr><th style="width:70px;">Row</th><th>Reason</th></tr></thead>
+                    <tbody>
+                        <% warnings.forEach(function (w) { %>
+                            <tr><td><%= w.row %></td><td class="text-warning"><%= w.message %></td></tr>
+                        <% }); %>
+                    </tbody>
+                </table>
+            </div>
+        <% } %>
+        <% if (failures.length) { %>
+            <p><span class="badge badge-danger">Failed</span> <%= failures.length %> row<%= failures.length === 1 ? '' : 's' %> (passed validation but failed to save)</p>
+            <div class="table-responsive">
+                <table class="table table-vcenter table-sm">
+                    <thead><tr><th style="width:70px;">Row</th><th>Reason</th></tr></thead>
+                    <tbody>
+                        <% failures.forEach(function (f) { %>
+                            <tr><td><%= f.row %></td><td class="text-danger"><%= f.message %></td></tr>
+                        <% }); %>
+                    </tbody>
+                </table>
+            </div>
+        <% } %>
+    </div>
+</div>

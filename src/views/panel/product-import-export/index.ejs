@@ -1,0 +1,56 @@
+<div class="row">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Sample Import Template</h3>
+            </div>
+            <div class="card-body">
+                <p class="text-muted">Pick a category to download a ready-to-fill template for it - every attribute configured for that category becomes its own column, with a dropdown for any attribute that has a fixed list of options, plus a couple of sample rows (including a worked Variable-product example) to show the pattern.</p>
+                <form action="/panel/products/import-export/sample-template" method="GET">
+                    <div class="mb-3">
+                        <label class="form-label">Category <span class="required-mark">*</span></label>
+                        <select name="categoryId" class="form-select" required>
+                            <option value="">Select category</option>
+                            <% categories.forEach(function (c) { %>
+                                <option value="<%= c._id %>"><%= c.name %></option>
+                            <% }); %>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-outline-primary"><i class="fas fa-file-download"></i> Download Sample Template</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Export Products</h3>
+            </div>
+            <div class="card-body">
+                <p class="text-muted">Downloads every product (Simple and Variable) as an .xlsx spreadsheet, matching the current catalogue. A Variable product exports as one row per variation, all sharing the same Product Group.</p>
+                <a href="/panel/products/export" class="btn btn-primary"><i class="fas fa-file-export"></i> Export to Excel</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Import Products</h3>
+            </div>
+            <div class="card-body">
+                <p class="text-muted">Upload an .xlsx or .csv file. Both <strong>Simple</strong> and <strong>Variable</strong> products are supported - for a Variable product, use one row per variation and give every one of those rows the same <strong>Product Group</strong> value, with Product Type set to VARIABLE.</p>
+                <p class="mb-2"><strong>Base columns:</strong></p>
+                <p class="text-muted" style="font-size:.85rem;"><%= columns.join(' &middot; ') %></p>
+                <p class="text-muted" style="font-size:.85rem;">Status must be one of: <%= statuses.join(', ') %> (defaults to DRAFT if left blank). Product Type defaults to SIMPLE if left blank. Any other column is matched by name against that row's category attributes - use the sample template above to get the exact column names and dropdowns for a category.</p>
+                <form action="/panel/products/import-export/preview" method="POST" enctype="multipart/form-data">
+                    <div class="mb-3">
+                        <input type="file" name="file" class="form-control" accept=".xlsx,.xls,.csv" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary"><i class="fas fa-file-import"></i> Upload &amp; Preview</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

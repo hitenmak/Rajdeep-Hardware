@@ -1,0 +1,136 @@
+<div class="row">
+    <div class="col-md-7">
+        <div class="card card-primary">
+            <div class="card-header">
+                <h3 class="card-title"><%= record ? 'Edit Attribute' : 'Add Attribute' %></h3>
+            </div>
+            <form action="<%= record ? '/panel/attributes/' + record._id + '/edit' : '/panel/attributes/create' %>" method="POST">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Attribute Name <span class="required-mark">*</span></label>
+                            <input type="text" name="name" class="form-control" value="<%= record ? record.name : '' %>" required maxlength="50">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Code <span class="required-mark">*</span></label>
+                            <input type="text" name="code" class="form-control" value="<%= record ? record.code : '' %>" required maxlength="50" placeholder="e.g. color">
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Input Type <span class="required-mark">*</span></label>
+                            <select name="inputType" class="form-select" required>
+                                <% inputTypes.forEach(function (t) { %>
+                                    <option value="<%= t %>" <%= record && record.inputType === t ? 'selected' : '' %>><%= t.replace('_',' ') %></option>
+                                <% }); %>
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Unit</label>
+                            <input type="text" name="unit" class="form-control" value="<%= record ? (record.unit || '') : '' %>" maxlength="20" placeholder="e.g. mm, grams">
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <div class="form-check form-switch">
+                                <input type="checkbox" class="form-check-input" id="isVariationAttribute" name="isVariationAttribute" value="true" <%= record && record.isVariationAttribute ? 'checked' : '' %>>
+                                <label class="form-check-label" for="isVariationAttribute">Variation Attribute</label>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <div class="form-check form-switch">
+                                <input type="checkbox" class="form-check-input" id="isRequired" name="isRequired" value="true" <%= record && record.isRequired ? 'checked' : '' %>>
+                                <label class="form-check-label" for="isRequired">Required</label>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <div class="form-check form-switch">
+                                <input type="checkbox" class="form-check-input" id="allowCustomValue" name="allowCustomValue" value="true" <%= record && record.allowCustomValue ? 'checked' : '' %>>
+                                <label class="form-check-label" for="allowCustomValue">Allow Custom Value</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Sort Order</label>
+                            <input type="number" name="sortOrder" class="form-control" value="<%= record ? record.sortOrder : 0 %>">
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Status <span class="required-mark">*</span></label>
+                            <select name="status" class="form-select" required>
+                                <option value="ACTIVE" <%= !record || record.status === 'ACTIVE' ? 'selected' : '' %>>Active</option>
+                                <option value="INACTIVE" <%= record && record.status === 'INACTIVE' ? 'selected' : '' %>>Inactive</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <button type="submit" class="btn btn-primary">Save Attribute</button>
+                    <a href="/panel/attributes" class="btn btn-default">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <% if (record && valueBasedInputTypes.includes(record.inputType)) { %>
+    <div class="col-md-5">
+        <div class="card card-secondary">
+            <div class="card-header">
+                <h3 class="card-title">Values</h3>
+            </div>
+            <div class="card-body p-0">
+                <table class="table table-vcenter table-sm mb-0 card-table">
+                    <thead>
+                        <tr>
+                            <% if (record.inputType === 'COLOR') { %><th style="width:30px;"></th><% } %>
+                            <th>Value</th>
+                            <th>Code</th>
+                            <th>Status</th>
+                            <th style="width: 90px;"></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% if (!values.length) { %>
+                            <tr><td colspan="5" class="text-center text-muted py-3">No values yet</td></tr>
+                        <% } %>
+                        <% values.forEach(function (v) { %>
+                            <tr>
+                                <% if (record.inputType === 'COLOR') { %>
+                                    <td><% if (v.hexCode) { %><span style="display:inline-block;width:18px;height:18px;border-radius:3px;border:1px solid #ccc;background:<%= v.hexCode %>;"></span><% } %></td>
+                                <% } %>
+                                <td><%= v.value %></td>
+                                <td><code><%= v.code %></code></td>
+                                <td><span class="badge <%= v.status === 'ACTIVE' ? 'badge-success' : 'badge-secondary' %>"><%= v.status %></span></td>
+                                <td>
+                                    <div class="btn-list flex-nowrap">
+                                        <a href="/panel/attributes/<%= record._id %>/values/<%= v._id %>/edit" class="btn btn-xs btn-outline-primary"><i class="fas fa-edit"></i></a>
+                                        <form action="/panel/attributes/<%= record._id %>/values/<%= v._id %>/delete" method="POST" class="d-inline" onsubmit="return confirm('Delete this value?');">
+                                            <button type="submit" class="btn btn-xs btn-outline-danger"><i class="fas fa-trash"></i></button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        <% }); %>
+                    </tbody>
+                </table>
+            </div>
+            <div class="card-footer">
+                <form action="/panel/attributes/<%= record._id %>/values/create" method="POST" enctype="multipart/form-data">
+                    <div class="row">
+                        <div class="col-4 mb-3"><input type="text" name="value" class="form-control" placeholder="Value *" required></div>
+                        <div class="col-4 mb-3"><input type="text" name="code" class="form-control" placeholder="Code *" required></div>
+                        <% if (record.inputType === 'COLOR') { %>
+                        <div class="col-4 mb-3"><input type="color" name="hexCode" class="form-control" value="#000000"></div>
+                        <% } %>
+                    </div>
+                    <input type="hidden" name="status" value="ACTIVE">
+                    <input type="hidden" name="sortOrder" value="0">
+                    <button type="submit" class="btn btn-primary"><i class="fas fa-plus"></i> Add Value</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    <% } %>
+</div>

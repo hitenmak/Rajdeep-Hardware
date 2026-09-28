@@ -1,0 +1,269 @@
+<%
+    var activePercent = stats.productCount ? Math.round((stats.activeProductCount / stats.productCount) * 100) : 0;
+    var lowStockPercent = stats.productCount ? Math.round((stats.lowStockCount / stats.productCount) * 100) : 0;
+    var draftCount = (productsByStatus.find(function (s) { return s.status === 'DRAFT'; }) || {}).count || 0;
+%>
+
+<div class="row mb-3">
+    <div class="col-lg-6 mb-3 mb-lg-0">
+        <div class="card h-100">
+            <div class="card-body">
+                <h3 class="mb-1">Welcome back, <%= authUser?.firstName || '' %></h3>
+                <p class="text-secondary">Here's what's happening with your catalogue today.</p>
+                <div class="row">
+                    <div class="col-6">
+                        <div class="text-secondary text-uppercase" style="font-size:.7rem;letter-spacing:.03em;">Active Rate</div>
+                        <div class="h3 mb-1"><%= activePercent %>%</div>
+                        <div class="progress progress-sm">
+                            <div class="progress-bar bg-success" style="width: <%= activePercent %>%"></div>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="text-secondary text-uppercase" style="font-size:.7rem;letter-spacing:.03em;">Low Stock Rate</div>
+                        <div class="h3 mb-1"><%= lowStockPercent %>%</div>
+                        <div class="progress progress-sm">
+                            <div class="progress-bar bg-danger" style="width: <%= lowStockPercent %>%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6 mb-3 mb-lg-0">
+        <div class="card h-100">
+            <div class="card-body">
+                <div class="text-secondary text-uppercase" style="font-size:.7rem;letter-spacing:.03em;">Total Products</div>
+                <div class="h1 mb-1"><%= stats.productCount %></div>
+                <div class="text-secondary" style="font-size:.8rem;"><%= stats.activeProductCount %> active &middot; <%= draftCount %> draft</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6">
+        <div class="card h-100">
+            <div class="card-body d-flex flex-column align-items-center justify-content-center">
+                <div class="text-secondary text-uppercase mb-2" style="font-size:.7rem;letter-spacing:.03em;">Active Products</div>
+                <div class="gauge-wrap">
+                    <canvas id="activeGauge" width="130" height="130"></canvas>
+                    <div class="gauge-label">
+                        <strong><%= activePercent %>%</strong>
+                        <span>Active</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="stat-tile-row mb-3">
+    <div class="stat-tile">
+        <span class="stat-tile-icon" style="background:linear-gradient(135deg,#6366f1,#818cf8);"><i class="fas fa-box-open"></i></span>
+        <div class="stat-tile-body">
+            <span class="stat-tile-label">Products</span>
+            <span class="stat-tile-value"><%= stats.productCount %></span>
+        </div>
+        <% if (can('PRODUCT.VIEW')) { %><a href="/panel/products" class="stat-tile-link"><i class="fas fa-arrow-right"></i></a><% } %>
+    </div>
+    <div class="stat-tile">
+        <span class="stat-tile-icon" style="background:linear-gradient(135deg,#ef4444,#f87171);"><i class="fas fa-triangle-exclamation"></i></span>
+        <div class="stat-tile-body">
+            <span class="stat-tile-label">Low Stock</span>
+            <span class="stat-tile-value"><%= stats.lowStockCount %></span>
+        </div>
+        <% if (can('PRODUCT.VIEW')) { %><a href="/panel/products" class="stat-tile-link"><i class="fas fa-arrow-right"></i></a><% } %>
+    </div>
+    <div class="stat-tile">
+        <span class="stat-tile-icon" style="background:linear-gradient(135deg,#8b5cf6,#a78bfa);"><i class="fas fa-users"></i></span>
+        <div class="stat-tile-body">
+            <span class="stat-tile-label">Users</span>
+            <span class="stat-tile-value"><%= stats.userCount %></span>
+        </div>
+        <% if (can('USER.VIEW')) { %><a href="/panel/users" class="stat-tile-link"><i class="fas fa-arrow-right"></i></a><% } %>
+    </div>
+    <div class="stat-tile">
+        <span class="stat-tile-icon" style="background:linear-gradient(135deg,#14b8a6,#2dd4bf);"><i class="fas fa-store"></i></span>
+        <div class="stat-tile-body">
+            <span class="stat-tile-label">Dealers</span>
+            <span class="stat-tile-value"><%= stats.dealerCount %></span>
+        </div>
+        <% if (can('DEALER.VIEW')) { %><a href="/panel/dealers" class="stat-tile-link"><i class="fas fa-arrow-right"></i></a><% } %>
+    </div>
+    <div class="stat-tile">
+        <span class="stat-tile-icon" style="background:linear-gradient(135deg,#b8863a,#d9a441);"><i class="fas fa-file-invoice"></i></span>
+        <div class="stat-tile-body">
+            <span class="stat-tile-label">Purchase Orders</span>
+            <span class="stat-tile-value"><%= stats.purchaseOrderCount %></span>
+        </div>
+        <% if (can('PURCHASE-ORDER.VIEW')) { %><a href="/panel/purchase-orders" class="stat-tile-link"><i class="fas fa-arrow-right"></i></a><% } %>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-4 col-md-6 mb-3">
+        <div class="card chart-card h-100">
+            <div class="card-header"><h3 class="card-title">Products by Status</h3></div>
+            <div class="card-body d-flex align-items-center justify-content-center">
+                <canvas id="statusChart" height="190"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4 col-md-6 mb-3">
+        <div class="card chart-card h-100">
+            <div class="card-header"><h3 class="card-title">Top Categories</h3></div>
+            <div class="card-body">
+                <canvas id="categoryChart" height="190"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4 col-md-12 mb-3">
+        <div class="card chart-card h-100">
+            <div class="card-header"><h3 class="card-title">Login Activity <small class="form-hint font-weight-normal">(7 days)</small></h3></div>
+            <div class="card-body">
+                <canvas id="loginChart" height="190"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <% if (can('LOGIN-AUDIT.VIEW')) { %>
+    <div class="col-lg-7 mb-3">
+        <div class="card h-100">
+            <div class="card-header">
+                <h3 class="card-title">Recent Login Activity</h3>
+                <div class="card-tools">
+                    <a href="/panel/login-audit" class="btn btn-sm btn-outline-secondary">View all</a>
+                </div>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-vcenter mb-0 card-table">
+                        <thead>
+                            <tr>
+                                <th>Email</th>
+                                <th>Status</th>
+                                <th>Reason</th>
+                                <th>IP Address</th>
+                                <th>Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% if (!recentLogins || !recentLogins.length) { %>
+                                <tr><td colspan="5" class="text-center text-muted py-3">No login activity yet</td></tr>
+                            <% } %>
+                            <% (recentLogins || []).forEach(function (r) { %>
+                                <tr>
+                                    <td><%= r.email %></td>
+                                    <td><span class="badge <%= r.status === 'SUCCESS' ? 'badge-success' : 'badge-danger' %>"><%= r.status %></span></td>
+                                    <td><%= r.reason || '-' %></td>
+                                    <td><%= r.ipAddress || '-' %></td>
+                                    <td><%= new Date(r.createdAt).toLocaleString() %></td>
+                                </tr>
+                            <% }); %>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    <% } %>
+    <div class="col-lg-5 mb-3">
+        <div class="card h-100">
+            <div class="card-header">
+                <h3 class="card-title">Low Stock Alerts</h3>
+                <div class="card-tools">
+                    <span class="badge badge-danger"><%= stats.lowStockCount %></span>
+                </div>
+            </div>
+            <div class="card-body p-0">
+                <ul class="list-unstyled mb-0">
+                    <% if (!lowStockProducts || !lowStockProducts.length) { %>
+                        <li class="text-center text-muted py-3">No low stock products</li>
+                    <% } %>
+                    <% (lowStockProducts || []).forEach(function (p) { %>
+                        <li class="low-stock-row">
+                            <div>
+                                <a href="/panel/products/<%= p._id %>"><%= p.name %></a>
+                                <div class="text-muted" style="font-size:.75rem;"><%= p.baseSku || '-' %></div>
+                            </div>
+                            <span class="badge badge-danger"><%= p.inventory ? p.inventory.globalStock : 0 %> left</span>
+                        </li>
+                    <% }); %>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="/vendor/chart.js/Chart.min.js"></script>
+<script>
+    var PRODUCTS_BY_STATUS = <%- JSON.stringify(productsByStatus) %>;
+    var PRODUCTS_BY_CATEGORY = <%- JSON.stringify(productsByCategory) %>;
+    var LOGIN_TREND = <%- JSON.stringify(loginTrend) %>;
+
+    var STATUS_COLORS = { DRAFT: '#98a2b3', ACTIVE: '#12805c', INACTIVE: '#b8860b', ARCHIVED: '#1f2937' };
+    var STATUS_BG = { DRAFT: '#eef0f4', ACTIVE: '#e6f7ed', INACTIVE: '#fff4e0', ARCHIVED: '#e5e7eb' };
+
+    var activePercent = <%- JSON.stringify(activePercent) %>;
+    new Chart(document.getElementById('activeGauge').getContext('2d'), {
+        type: 'doughnut',
+        data: {
+            datasets: [{
+                data: [activePercent, 100 - activePercent],
+                backgroundColor: ['#b8863a', '#eef0f2'],
+                borderWidth: 0,
+            }],
+        },
+        options: { legend: { display: false }, cutoutPercentage: 78, tooltips: { enabled: false }, maintainAspectRatio: true },
+    });
+
+    new Chart(document.getElementById('statusChart').getContext('2d'), {
+        type: 'doughnut',
+        data: {
+            labels: PRODUCTS_BY_STATUS.map(function (s) { return s.status; }),
+            datasets: [{
+                data: PRODUCTS_BY_STATUS.map(function (s) { return s.count; }),
+                backgroundColor: PRODUCTS_BY_STATUS.map(function (s) { return STATUS_COLORS[s.status] || '#98a2b3'; }),
+                borderWidth: 0,
+            }],
+        },
+        options: { legend: { position: 'bottom', labels: { boxWidth: 10, padding: 12 } }, cutoutPercentage: 65, maintainAspectRatio: true },
+    });
+
+    new Chart(document.getElementById('categoryChart').getContext('2d'), {
+        type: 'bar',
+        data: {
+            labels: PRODUCTS_BY_CATEGORY.map(function (c) { return c.name; }),
+            datasets: [{
+                data: PRODUCTS_BY_CATEGORY.map(function (c) { return c.count; }),
+                backgroundColor: '#b8863a',
+                borderRadius: 6,
+                maxBarThickness: 28,
+            }],
+        },
+        options: {
+            legend: { display: false },
+            scales: {
+                xAxes: [{ gridLines: { display: false } }],
+                yAxes: [{ ticks: { beginAtZero: true, precision: 0 } }],
+            },
+        },
+    });
+
+    new Chart(document.getElementById('loginChart').getContext('2d'), {
+        type: 'line',
+        data: {
+            labels: LOGIN_TREND.map(function (d) { return d.date.slice(5); }),
+            datasets: [
+                { label: 'Success', data: LOGIN_TREND.map(function (d) { return d.success; }), borderColor: '#12805c', backgroundColor: 'rgba(18,128,92,.1)', fill: true, tension: 0.35, pointRadius: 2 },
+                { label: 'Failed', data: LOGIN_TREND.map(function (d) { return d.failed; }), borderColor: '#c0392b', backgroundColor: 'rgba(192,57,43,.08)', fill: true, tension: 0.35, pointRadius: 2 },
+            ],
+        },
+        options: {
+            legend: { position: 'bottom', labels: { boxWidth: 10, padding: 12 } },
+            scales: {
+                xAxes: [{ gridLines: { display: false } }],
+                yAxes: [{ ticks: { beginAtZero: true, precision: 0 } }],
+            },
+        },
+    });
+</script>

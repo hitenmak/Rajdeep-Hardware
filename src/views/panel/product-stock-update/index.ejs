@@ -1,0 +1,93 @@
+<h4 class="mb-3">Stock &amp; Price Only</h4>
+<p class="text-muted" style="margin-top:-0.5rem;">Fast, low-risk updates - only Price, Stock and Low Stock Threshold are ever touched.</p>
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Download Current Stock &amp; Pricing</h3>
+            </div>
+            <div class="card-body">
+                <p class="text-muted">Pick a category to download every one of its products (Simple and Variable) with their current Price, Stock and Low Stock Threshold already filled in. Change only the numbers you want to update, leave the rest as is, and upload the file back below.</p>
+                <form action="/panel/products/stock-update/template" method="GET">
+                    <div class="mb-3">
+                        <label class="form-label">Category <span class="required-mark">*</span></label>
+                        <select name="categoryId" class="form-select" required>
+                            <option value="">Select category</option>
+                            <% categories.forEach(function (c) { %>
+                                <option value="<%= c._id %>"><%= c.name %></option>
+                            <% }); %>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-outline-primary"><i class="fas fa-file-download"></i> Download Current Stock &amp; Pricing</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Upload Updated File</h3>
+            </div>
+            <div class="card-body">
+                <p class="text-muted">Upload the file back once you've edited it. Every row is matched to an existing product by <strong>SKU</strong> - a Simple product's own SKU, or one of a Variable product's variation SKUs. Only <strong>Price, Stock</strong> and <strong>Low Stock Threshold</strong> are changed; nothing else about the product is touched. Leave a cell blank to leave that field unchanged.</p>
+                <p class="mb-2"><strong>Columns:</strong></p>
+                <p class="text-muted" style="font-size:.85rem;"><%= columns.join(' &middot; ') %></p>
+                <p class="text-muted" style="font-size:.85rem;">Product Name, Type, Variation and Image are reference columns only - editing them has no effect.</p>
+                <form action="/panel/products/stock-update/preview" method="POST" enctype="multipart/form-data">
+                    <div class="mb-3">
+                        <input type="file" name="file" class="form-control" accept=".xlsx,.xls,.csv" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary"><i class="fas fa-file-import"></i> Upload &amp; Preview</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<h4 class="mb-3">Full Product Details</h4>
+<p class="text-muted" style="margin-top:-0.5rem;">Change everything about a product in bulk - Name, Brand, Description, Status, Image and every attribute, on top of Price and Stock.</p>
+<div class="row">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Download Current Product Details</h3>
+            </div>
+            <div class="card-body">
+                <p class="text-muted">Pick a category to download every one of its products with <strong>all</strong> of their current details filled in - Name, Brand, Description, Status, Price, Stock, Low Stock Threshold, Image URL and every attribute the category has (with a dropdown for any attribute that has a fixed list of options).</p>
+                <form action="/panel/products/stock-update/full-template" method="GET">
+                    <div class="mb-3">
+                        <label class="form-label">Category <span class="required-mark">*</span></label>
+                        <select name="categoryId" class="form-select" required>
+                            <option value="">Select category</option>
+                            <% categories.forEach(function (c) { %>
+                                <option value="<%= c._id %>"><%= c.name %></option>
+                            <% }); %>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-outline-primary"><i class="fas fa-file-download"></i> Download Current Product Details</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Upload Updated File</h3>
+            </div>
+            <div class="card-body">
+                <p class="text-muted">Upload the file back once you've edited it. Rows are matched by <strong>SKU</strong>, same as Stock &amp; Price above. Change only the cells you want updated - a blank cell always means "leave this unchanged", it never clears an existing value. To replace a product's image, paste a new public image URL in the Image URL column.</p>
+                <p class="mb-2"><strong>Base columns:</strong></p>
+                <p class="text-muted" style="font-size:.85rem;"><%= fullColumns.join(' &middot; ') %></p>
+                <p class="text-muted" style="font-size:.85rem;">Plus one column per attribute configured for that category. SKU, Type and Variation are reference columns only.</p>
+                <form action="/panel/products/stock-update/full-preview" method="POST" enctype="multipart/form-data">
+                    <div class="mb-3">
+                        <input type="file" name="file" class="form-control" accept=".xlsx,.xls,.csv" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary"><i class="fas fa-file-import"></i> Upload &amp; Preview</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

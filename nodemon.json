@@ -1,0 +1,12 @@
+{
+    "watch": [
+        "src",
+        "index.ts",
+        ".env"
+    ],
+    "ignore": [
+        "src/storage/*"
+    ],
+    "ext": "ts",
+    "exec": "ts-node index.ts"
+}

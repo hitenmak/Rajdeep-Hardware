@@ -1,0 +1,8 @@
+<% if (typeof flash !== 'undefined' && flash && flash.message) { %>
+    <% const flashClass = { success: 'alert-success', error: 'alert-danger', warning: 'alert-warning', info: 'alert-info' }[flash.type] || 'alert-info'; %>
+    <% const flashIcon = { success: 'fa-check-circle', error: 'fa-ban', warning: 'fa-exclamation-triangle', info: 'fa-info-circle' }[flash.type] || 'fa-info-circle'; %>
+    <div class="alert <%= flashClass %> alert-dismissible fade show mx-3 mx-md-0 mt-3 mt-md-0">
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        <i class="fas <%= flashIcon %>"></i> <%= flash.message %>
+    </div>
+<% } %>

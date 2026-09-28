@@ -1,0 +1,153 @@
+<div class="mb-2">
+    <a href="/panel/products" class="btn btn-sm btn-default"><i class="fas fa-arrow-left"></i> Back</a>
+    <% if (can('PRODUCT.UPDATE')) { %>
+        <a href="/panel/products/<%= record._id %>/edit" class="btn btn-sm btn-primary"><i class="fas fa-edit"></i> Edit</a>
+    <% } %>
+    <% var statusClass = { DRAFT: 'badge-secondary', ACTIVE: 'badge-success', INACTIVE: 'badge-warning', ARCHIVED: 'badge-dark' }[record.status] || 'badge-secondary'; %>
+    <span class="badge <%= statusClass %> p-2"><%= record.status %></span>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header"><h3 class="card-title"><%= record.name %></h3></div>
+            <div class="card-body">
+                <dl class="row mb-0">
+                    <dt class="col-sm-3">Product Code</dt><dd class="col-sm-9"><%= record.productCode || '-' %></dd>
+                    <dt class="col-sm-3">Brand</dt><dd class="col-sm-9"><%= record.brand || '-' %></dd>
+                    <dt class="col-sm-3">Category</dt><dd class="col-sm-9"><%= record.categoryId ? record.categoryId.name : '-' %><% if (record.subcategoryId) { %> / <%= record.subcategoryId.name %><% } %></dd>
+                    <dt class="col-sm-3">Type</dt><dd class="col-sm-9"><%= record.productType %></dd>
+                    <dt class="col-sm-3">Tags</dt><dd class="col-sm-9"><%= (record.tags || []).join(', ') || '-' %></dd>
+                    <dt class="col-sm-3">Description</dt><dd class="col-sm-9"><%= record.description %></dd>
+                </dl>
+            </div>
+        </div>
+
+        <% if (record.images && record.images.length) { %>
+        <div class="card">
+            <div class="card-header"><h3 class="card-title">Images</h3></div>
+            <div class="card-body">
+                <% record.images.forEach(function (img) { %>
+                    <img src="<%= mediaUrl(img.image) %>" class="me-2 mb-2" style="width:100px;height:100px;object-fit:cover;border-radius:4px;<%= img.isPrimary ? 'border:2px solid #007bff;' : 'border:1px solid #dee2e6;' %>" onerror="this.style.visibility='hidden'">
+                <% }); %>
+            </div>
+        </div>
+        <% } %>
+
+        <% if (attributeRows && attributeRows.length) { %>
+        <div class="card">
+            <div class="card-header"><h3 class="card-title">Attributes</h3></div>
+            <div class="card-body p-0">
+                <table class="table table-vcenter table-sm mb-0 card-table">
+                    <% attributeRows.forEach(function (a) { %>
+                        <tr>
+                            <td style="width:200px;"><%= a.name %><% if (a.isProductLevelAddition) { %> <span class="badge badge-info">extra</span><% } %></td>
+                            <td><%= a.value %> <%= a.unit || '' %></td>
+                        </tr>
+                    <% }); %>
+                </table>
+            </div>
+        </div>
+        <% } %>
+
+        <% if (record.productType === 'VARIABLE' && variationRows.length) { %>
+        <div class="card">
+            <div class="card-header"><h3 class="card-title">Variations (<%= variationRows.length %>)</h3></div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-vcenter table-sm mb-0 card-table">
+                        <thead>
+                            <tr><th>Combination</th><th>SKU</th><th>Price</th><th>Stock</th><th>Status</th></tr>
+                        </thead>
+                        <tbody>
+                            <% variationRows.forEach(function (v) { %>
+                                <% var available = (v.stockQuantity || 0) - (v.reservedQuantity || 0); %>
+                                <% var stockStatus = getStockStatus(available, v.lowStockThreshold); %>
+                                <tr>
+                                    <td><%= v.combinationLabel %></td>
+                                    <td><%= v.sku || '-' %></td>
+                                    <td><%= record.pricing.currency %> <%= getEffectivePrice(record, v) %></td>
+                                    <td><%= v.stockQuantity %></td>
+                                    <td><span class="badge <%= { IN_STOCK: 'badge-success', LOW_STOCK: 'badge-warning', OUT_OF_STOCK: 'badge-danger' }[stockStatus] %>"><%= stockStatus.replace('_',' ') %></span></td>
+                                </tr>
+                            <% }); %>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <% } %>
+
+        <% if (record.specifications && record.specifications.length) { %>
+        <div class="card">
+            <div class="card-header"><h3 class="card-title">Specifications</h3></div>
+            <div class="card-body p-0">
+                <table class="table table-vcenter table-sm mb-0 card-table">
+                    <% record.specifications.forEach(function (s) { %>
+                        <tr><td style="width:200px;"><%= s.name %></td><td><%= s.value %> <%= s.unit || '' %></td></tr>
+                    <% }); %>
+                </table>
+            </div>
+        </div>
+        <% } %>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header"><h3 class="card-title">Pricing</h3></div>
+            <div class="card-body">
+                <dl class="row mb-0">
+                    <dt class="col-sm-6">Global Price</dt><dd class="col-sm-6"><%= record.pricing.currency %> <%= record.pricing.price %></dd>
+                    <dt class="col-sm-6">Sale Price</dt><dd class="col-sm-6"><%= record.pricing.salePrice != null ? (record.pricing.currency + ' ' + record.pricing.salePrice) : '-' %></dd>
+                    <dt class="col-sm-6">Cost Price</dt><dd class="col-sm-6"><%= record.pricing.costPrice != null ? record.pricing.costPrice : '-' %></dd>
+                </dl>
+            </div>
+        </div>
+
+        <% if (record.productType === 'SIMPLE') { %>
+        <div class="card">
+            <div class="card-header"><h3 class="card-title">Inventory</h3></div>
+            <div class="card-body">
+                <% var available = (record.inventory.globalStock || 0); %>
+                <% var stockStatus = getStockStatus(available, record.inventory.lowStockThreshold); %>
+                <dl class="row mb-0">
+                    <dt class="col-sm-6">Stock</dt><dd class="col-sm-6"><%= record.inventory.globalStock %></dd>
+                    <dt class="col-sm-6">Status</dt><dd class="col-sm-6"><span class="badge <%= { IN_STOCK: 'badge-success', LOW_STOCK: 'badge-warning', OUT_OF_STOCK: 'badge-danger' }[stockStatus] %>"><%= stockStatus.replace('_',' ') %></span></dd>
+                </dl>
+            </div>
+        </div>
+        <% } %>
+
+        <div class="card">
+            <div class="card-header"><h3 class="card-title">Audit Log</h3></div>
+            <div class="card-body p-0">
+                <ul class="list-group list-group-flush">
+                    <% if (!auditLogs.length) { %>
+                        <li class="list-group-item text-muted">No history yet</li>
+                    <% } %>
+                    <% auditLogs.forEach(function (a) { %>
+                        <li class="list-group-item">
+                            <strong><%= (a.action || '').replace(/_/g, ' ') %></strong><br>
+                            <small><%= a.summary %></small><br>
+                            <small class="form-hint"><%= new Date(a.createdAt).toLocaleString() %> <% if (a.performedByName) { %>by <%= a.performedByName %><% if (a.performedByRole) { %> (<%= a.performedByRole %>)<% } %><% } %></small>
+                            <% if (a.changes && a.changes.length) { %>
+                                <table class="table table-sm table-vcenter mt-2 mb-0">
+                                    <thead><tr><th>Field</th><th>Old</th><th>New</th></tr></thead>
+                                    <tbody>
+                                        <% a.changes.forEach(function (c) { %>
+                                            <tr>
+                                                <td><%= c.label %></td>
+                                                <td class="text-muted"><del><%= c.oldValue ?? '-' %></del></td>
+                                                <td><strong><%= c.newValue ?? '-' %></strong></td>
+                                            </tr>
+                                        <% }); %>
+                                    </tbody>
+                                </table>
+                            <% } %>
+                        </li>
+                    <% }); %>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>

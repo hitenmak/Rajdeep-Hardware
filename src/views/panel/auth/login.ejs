@@ -1,0 +1,37 @@
+<div class="text-center mb-4">
+    <img src="/resource/img/RD.png" alt="Rajdeep Hardware" class="auth-logo">
+    <div class="text-secondary mt-2">Admin Panel</div>
+</div>
+
+<% if (typeof isExpired !== 'undefined' && isExpired) { %>
+    <div class="alert alert-warning">Your session has expired due to inactivity. Please login again.</div>
+<% } %>
+
+<div class="card card-md">
+    <div class="card-body">
+        <h2 class="h2 text-center mb-4">Sign in to start your session</h2>
+
+        <form action="/panel/login" method="POST" autocomplete="off">
+            <div class="mb-3">
+                <label class="form-label">Email</label>
+                <div class="input-group input-group-flat">
+                    <input type="email" name="email" class="form-control" placeholder="Email" required autofocus>
+                    <span class="input-group-text"><i class="fas fa-envelope"></i></span>
+                </div>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Password</label>
+                <div class="input-group input-group-flat">
+                    <input type="password" name="password" class="form-control" placeholder="Password" required>
+                    <span class="input-group-text"><i class="fas fa-lock"></i></span>
+                </div>
+            </div>
+            <div class="form-footer">
+                <button type="submit" class="btn btn-primary w-100">Sign In</button>
+            </div>
+        </form>
+        <div class="text-center text-secondary mt-3">
+            <a href="/panel/forgot-password">Forgot password?</a>
+        </div>
+    </div>
+</div>

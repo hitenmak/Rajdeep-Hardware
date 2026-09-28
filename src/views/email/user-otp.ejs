@@ -1,0 +1,23 @@
+<tr style="box-sizing:border-box !important;">
+    <td style="box-sizing:border-box !important;padding: 17px 0;">
+        <table style="box-sizing:border-box !important;width: 100%;padding: 32px !important; background-color: #fff;">
+            <tbody style="box-sizing:border-box !important;">
+                <tr style="box-sizing:border-box !important;">
+                    <td style="box-sizing:border-box !important;">
+                        <p style="margin-top:0;margin-bottom: 16px;box-sizing:border-box !important;">
+                            Dear <strong style="box-sizing:border-box !important;"><%= data.user?.firstName %> <%= data.user?.lastName %>,</strong>
+                        </p>
+
+                        <p style="margin-top:0;margin-bottom: 16px;box-sizing:border-box !important;">
+                            Please use the verification code below to verify your email for <%= config.appName %> account.
+                        </p>
+
+                        <h4 class="cardOtp" style="display: block; color:#F5F5F5;font-family: 'Inter', sans-serif;font-weight: 600;font-size: 24px;line-height: 1.2;padding: 24px;background: #5FA92C ;border-radius: 12px;margin: 0;text-align: center;">
+                            <%= otp %>
+                        </h4>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </td>
+</tr>

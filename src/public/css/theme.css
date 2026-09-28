@@ -1,0 +1,426 @@
+/* ==========================================================================
+   Rajdeep Hardware Admin — Tabler theme overrides
+   Tabler already provides the rounded-card / clean-table look natively, so
+   this file only sets the brand color through Tabler's real theming hooks
+   and adds the handful of bespoke pieces Tabler has no equivalent for.
+   ========================================================================== */
+
+:root {
+    --tblr-primary: #b8863a;
+    --tblr-primary-rgb: 184, 134, 58;
+    --accent-gold: #b8863a;
+    --accent-gold-dark: #96692a;
+    --accent-amber: #d9a441;
+    --accent-gradient: linear-gradient(135deg, var(--accent-gold), var(--accent-amber));
+    /* Flat, bordered boxes instead of Tabler's drop-shadow card style. */
+    --tblr-shadow-card: none;
+    --tblr-border-color-translucent: #e2e4e9;
+    /* Tabler's own default body text (0.875rem) reads small on a high-res
+       desktop - bumped site-wide from this one variable, since virtually all
+       of Tabler's own typography sizing is built as a multiple of it
+       (https://preview.tabler.io/layout-fluid-vertical.html itself renders at
+       the smaller default - this project intentionally runs a notch bigger
+       for readability). */
+    --tblr-body-font-size: 0.95rem;
+}
+
+/* Tabler's `.icon` class sets its own --tblr-icon-size directly on itself
+   (not inherited from :root), so bumping it site-wide means re-declaring the
+   same rule here - equal specificity, this file loads after tabler.min.css so
+   it wins. Every icon everywhere (sidebar, buttons, list actions) reads at
+   this size now instead of Tabler's default 1.25rem. */
+.icon { --tblr-icon-size: 1.5rem; }
+
+body { background: var(--tblr-body-bg, #f5f5f7); }
+
+/* ---------- Buttons: plain, flat, text-only ----------
+   Applied once to the base .btn class so every button site-wide - Save,
+   Cancel, Filter, every "Add X", every row action, the product page's View/
+   Duplicate/Archive/Publish/Delete bar - picks it up with no markup changes
+   anywhere. Colors are untouched (still this project's own gold brand, not
+   Tabler's default blue) - just a clean, flat, moderately-rounded button
+   with no shadow/hover-lift and no icon, matching the plain "Submit/Cancel"
+   reference look. Icons are hidden with a CSS rule (rather than edited out of
+   every template) so this stays a single, reversible change; `.btn-xs` (the
+   circular icon-only row actions in every listing) is explicitly excluded -
+   those buttons ARE just an icon, hiding it would leave them blank. */
+.btn {
+    border-radius: 6px;
+    font-weight: 600;
+    box-shadow: none;
+}
+.btn:not(.btn-xs) i.fas,
+.btn:not(.btn-xs) i.far,
+.btn:not(.btn-xs) i.fab {
+    display: none;
+}
+
+/* ---------- Form field spacing ----------
+   Every view now uses Tabler's own real classes directly (`.mb-3` field
+   wrappers, `.form-label` labels, `.form-hint` help text - see
+   https://preview.tabler.io/form-elements.html), so Tabler's own CSS handles
+   all of this natively. No overrides needed here any more. */
+.required-mark { color: var(--tblr-danger, #d63939); font-weight: 600; }
+
+/* ---------- Form control typography & sizing ----------
+   Tabler's stock inputs are a little short and its labels a little light for
+   this admin's taste - bumped to a taller, more comfortable box (matching the
+   reference mock: ~46px tall, roomier padding) with a bolder, darker label so
+   it reads clearly above the field. Applied once here so every form site-wide
+   (not just the ones already touched) automatically matches. */
+.form-label {
+    font-size: .875rem;
+    font-weight: 600;
+    color: #1d1a2f;
+}
+.form-control, .form-select {
+    font-size: .9rem;
+    color: #1d1a2f;
+    padding: .65rem 1rem;
+    min-height: 2.875rem;
+    border-color: var(--tblr-border-color-translucent, #e2e4e9);
+}
+.form-select { padding-right: 2.75rem; }
+.form-control::placeholder { color: #9199a3; }
+.form-control:focus, .form-select:focus {
+    border-color: var(--accent-gold);
+    box-shadow: 0 0 0 3px rgba(184, 134, 58, .12);
+}
+.input-group-text {
+    font-size: .9rem;
+    color: #1d1a2f;
+    border-color: var(--tblr-border-color-translucent, #e2e4e9);
+}
+/* .form-control-sm/.form-select-sm are used deliberately for compact inline
+   table-row inputs (attribute values, PO line items, product variations) -
+   the base override above has equal specificity and loads later, so without
+   this it would silently blow those back up to full size too. */
+.form-control-sm, .form-select-sm {
+    font-size: .8125rem;
+    padding: .3125rem .5rem;
+    min-height: calc(1rem + .625rem + 2px);
+}
+.form-select-sm { padding-right: 1.75rem; }
+
+/* ---------- Cards: flat, bordered boxes with a hover highlight ---------- */
+/* Tabler's own .card has no default margin-bottom (unlike the AdminLTE-era
+   styling these views were written against), so cards stacked directly in
+   one column - e.g. the Attributes/Variations/Specifications cards on the
+   product view page - sit flush against each other with zero gap. Combined
+   with the hover ring below, that reads as one card's border bleeding into
+   the next. */
+.card {
+    box-shadow: none;
+    transition: border-color .18s ease, box-shadow .18s ease;
+}
+/* Excludes .h-100 cards - those fill an equal-height row (see the dashboard
+   chart cards), where an own margin-bottom would push them taller than the
+   row and break the equal-height effect. Spacing between rows there already
+   comes from the row wrapper's own .mb-3. */
+.card:not(.h-100) {
+    margin-bottom: 1.25rem;
+}
+/* The gold hover-highlight ring is a dashboard-only accent (its welcome/chart
+   cards, and the Reports landing page's own card grid, both use .h-100) -
+   every plain .card elsewhere (every form and every listing table) no longer
+   gets it, since a border flashing gold on hover over a data table/form
+   reads as an accidental "select" affordance rather than a real interaction. */
+.card.h-100:hover {
+    border-color: var(--accent-gold);
+    box-shadow: 0 0 0 1px var(--accent-gold);
+}
+
+/* ---------- Card headers ----------
+   Views still use the old AdminLTE `.card-tools` class name for header
+   action buttons (Tabler's own equivalent is `.card-actions`, which this
+   project's markup never adopted). Without this, the button has no
+   auto-margin push and sits jammed right next to the title. */
+.card-header { flex-wrap: wrap; row-gap: .5rem; column-gap: .75rem; }
+.card-header .card-title { margin-right: auto; }
+.card-tools {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: .5rem;
+}
+
+/* ---------- Sidebar (navbar-vertical, light) ----------
+   Matches Tabler's own reference layouts (fluid-vertical.html for the nav
+   itself, layout-folded-hover.html for the bottom profile card) using their
+   real markup/classes throughout - `.nav-link` / `.nav-link-title` /
+   `.nav-section-title` for nav items, and the profile card built the exact
+   same way Tabler's own docs site builds theirs: `.navbar-footer > .navbar-nav
+   > .nav-item.dropup > .nav-link` with an `.avatar` and a `.nav-link-title`
+   holding the name + a `.small.text-secondary` role line. Because it's the
+   same `.nav-link-title` class as every other nav item, Tabler's own
+   folded-hover CSS collapses it (and the avatar's margin) to an icon-only
+   rail automatically - no custom folding logic needed here for any of it. */
+.navbar-brand { padding: 1.1rem 1rem; }
+.brand-logo-mark { height: 32px; width: auto; flex-shrink: 0; }
+.brand-wordmark { margin-inline-start: .6rem; font-size: 1.05rem; font-weight: 700; color: #1d1a2f; white-space: nowrap; }
+.brand-wordmark-image { margin-inline-start: .6rem; height: 28px; width: auto; }
+
+/* Folded state: keep just the brand icon, hide the wordmark text (mirrors
+   Tabler's own folded-hover selector so the two stay in sync with the fold
+   state) - `.brand-wordmark`/`-image` are our own markup, so unlike the nav
+   links and the profile card above, this one genuinely needs its own rule.
+   The folded rail itself is only 4rem (64px) wide - this file's own 1rem
+   side padding alone was eating half of that, leaving the 32px-tall icon so
+   little room it could round down to nothing depending on its own aspect
+   ratio. Narrower padding + centering while folded gives it proper breathing
+   room and keeps it centered in the rail instead of pinned to one edge. */
+@media (min-width: 992px) {
+    :where([data-bs-sidebar=folded-hover]) .navbar-vertical.navbar-expand-lg:not(:hover):not(:has(:focus-visible)) .brand-wordmark,
+    :where([data-bs-sidebar=folded-hover]) .navbar-vertical.navbar-expand-lg:not(:hover):not(:has(:focus-visible)) .brand-wordmark-image {
+        display: none;
+    }
+    :where([data-bs-sidebar=folded-hover]) .navbar-vertical.navbar-expand-lg:not(:hover):not(:has(:focus-visible)) .navbar-brand {
+        padding-inline: .5rem;
+        justify-content: center;
+    }
+    :where([data-bs-sidebar=folded-hover]) .navbar-vertical.navbar-expand-lg:not(:hover):not(:has(:focus-visible)) .navbar-brand > a {
+        justify-content: center;
+        width: 100%;
+    }
+}
+
+.navbar-vertical .navbar-nav .nav-link {
+    font-size: .95rem;
+    font-weight: 500;
+    color: #4b5563;
+    border-radius: 8px;
+    margin-inline: .5rem;
+    padding-block: .6rem;
+    transition: background-color .15s ease, color .15s ease;
+}
+.navbar-vertical .navbar-nav .nav-link .nav-link-icon {
+    color: #9199a3;
+    width: 1.5rem;
+    height: 1.5rem;
+    /* Tabler zeroes --tblr-nav-link-icon-margin-end itself while folded (no
+       label sitting next to the icon any more) - reading the variable here
+       instead of hardcoding the gap keeps that centered-icon folded look
+       instead of leaving a lopsided gap on one side. */
+    margin-inline-end: var(--tblr-nav-link-icon-margin-end, .75rem);
+}
+.navbar-vertical .navbar-nav .nav-link:hover {
+    background: #f3f4f6;
+    color: #1d1a2f;
+}
+.navbar-vertical .navbar-nav .nav-item.active > .nav-link {
+    background: color-mix(in srgb, var(--accent-gold) 14%, transparent) !important;
+    color: #1d1a2f !important;
+    font-weight: 600;
+}
+.navbar-vertical .navbar-nav .nav-item.active > .nav-link .nav-link-icon {
+    color: var(--accent-gold-dark) !important;
+}
+
+/* Profile footer (avatar + name + role, pinned to the bottom) - the .nav-link
+   itself already picks up this file's own nav-link hover/padding rules above
+   (it's a real .nav-link, same as every other item), and Tabler's own CSS
+   already handles the avatar's spacing, the name/role text sizing, and the
+   dropdown-menu positioning. A solid background is the one thing worth
+   adding: without it the footer is transparent and whatever the page content
+   scrolls to underneath the fixed sidebar shows through.
+
+   It sits in the fixed-height sidebar column via margin-top:auto, so on a
+   short page it lands at the exact same viewport row as the app's own
+   <footer> (which is pushed down the same way inside .page-wrapper). Both
+   rows are given the same height below so they read as one aligned bottom
+   strip instead of two mismatched bars butting into each other. */
+.navbar-footer {
+    /* Root cause of the whole "bleeds past the sidebar" saga: <aside
+       class="navbar navbar-vertical ..."> is display:flex but stays
+       flex-direction:row (Tabler never overrides it to column for the
+       vertical variant - only the inner [class^=container] gets its own
+       column layout). .navbar-footer is a plain sibling of that container
+       in the aside's row, so with position:relative it was simply the
+       NEXT flex item - rendered immediately to the right of the nav
+       column, in the ~2px of row space left over, spilling everything
+       past that into the main content. Trimming its content (min-width:0,
+       ellipsis, etc. below) never fixed this, because the problem was its
+       position in the row, not its size.
+
+       Fix: take it out of that row entirely and pin it as an overlay
+       anchored to the aside itself (which is position:fixed, so this
+       resolves against the aside's own box, not the viewport). */
+    position: absolute;
+    inset-inline: 0;
+    bottom: 0;
+    --app-footer-height: 4.5rem;
+    background: var(--tblr-navbar-bg, #fff);
+    z-index: 2;
+    min-height: var(--app-footer-height);
+    display: flex;
+    align-items: center;
+    box-sizing: border-box;
+    /* NOT overflow:hidden here - the dropup menu (logout/settings) is an
+       absolutely-positioned child of this element, and clipping the
+       container's overflow clips the open menu with it, making the row
+       look unclickable. */
+}
+/* The nav list no longer has a footer sibling pushing it up (the footer is
+   now an overlay), so without this the last item(s) - e.g. "Settings" -
+   render underneath the pinned card. Reserve the same space at the bottom
+   of the scroll area instead. */
+.navbar-vertical .navbar-collapse { padding-bottom: 4.5rem; }
+.navbar-footer .navbar-nav { width: 100%; min-width: 0; }
+.navbar-footer .nav-item { min-width: 0; width: 100%; }
+.navbar-footer .nav-link {
+    min-height: var(--app-footer-height);
+    min-width: 0;
+    width: 100%;
+    /* Pin the avatar (and, once expanded, the name/role next to it) to the
+       sidebar's own left edge in every state - folded rail, mid hover
+       transition, and fully opened - instead of trusting the cascade to
+       keep winning against the generic `.navbar .navbar-nav .nav-link
+       {justify-content:center}` base rule every browser/state combination. */
+    justify-content: flex-start !important;
+}
+.navbar-footer .nav-link-title {
+    min-width: 0;
+    flex: 1 1 auto;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    text-align: left;
+}
+.navbar-footer .nav-link-title .small { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: left; }
+/* The dropup menu itself must stay clear of the sidebar's own edge and
+   never get clipped by it - anchor it to the full current column width
+   and let it float above everything else in the fixed-height rail. */
+.navbar-footer .dropdown-menu {
+    z-index: 1030;
+    max-width: calc(var(--tblr-sidebar-width, 16rem) - 1rem);
+}
+
+/* App footer (page-wrapper), matched to .navbar-footer's height/background
+   above so the two bottom bars line up as a single strip on short pages
+   instead of the transparent app footer text drifting into the sidebar's
+   solid profile card at a different height. */
+.page-wrapper > .footer {
+    min-height: 4.5rem;
+    padding-block: 0;
+    display: flex;
+    align-items: center;
+    background: var(--tblr-bg-surface, #fff);
+}
+
+/* ---------- Dashboard ---------- */
+.stat-tile-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: .85rem;
+}
+.stat-tile {
+    background: var(--tblr-card-bg, #fff);
+    border: 1px solid var(--tblr-border-color, #e6e7e9);
+    border-radius: 10px;
+    padding: .75rem .9rem;
+    display: flex;
+    align-items: center;
+    gap: .7rem;
+    transition: border-color .18s ease, box-shadow .18s ease;
+}
+.stat-tile:hover {
+    border-color: var(--accent-gold);
+    box-shadow: 0 0 0 1px var(--accent-gold);
+}
+.stat-tile-icon {
+    width: 38px; height: 38px; min-width: 38px;
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; font-size: .95rem;
+}
+.stat-tile-body { display: flex; flex-direction: column; line-height: 1.25; overflow: hidden; }
+.stat-tile-label { font-size: .7rem; color: var(--tblr-secondary, #6b7280); font-weight: 700; text-transform: uppercase; letter-spacing: .02em; white-space: nowrap; }
+.stat-tile-value { font-size: 1.15rem; font-weight: 800; color: var(--tblr-body-color, #1d1a2f); }
+.stat-tile-link {
+    margin-left: auto; width: 24px; height: 24px; border-radius: 999px;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--tblr-secondary, #6b7280); font-size: .7rem; background: var(--tblr-bg-surface-secondary, #f4f4f5);
+}
+.stat-tile-link:hover { background: var(--accent-gradient); color: #fff; }
+
+.low-stock-row {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: .75rem;
+    padding: .65rem 1.25rem;
+    border-top: 1px solid var(--tblr-border-color, #e6e7e9);
+}
+.low-stock-row:first-child { border-top: none; }
+
+.gauge-wrap { position: relative; width: 130px; height: 130px; margin: 0 auto; }
+.gauge-wrap .gauge-label {
+    position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center;
+}
+.gauge-wrap .gauge-label strong { font-size: 1.3rem; color: var(--tblr-body-color, #1d1a2f); }
+.gauge-wrap .gauge-label span { font-size: .68rem; color: var(--tblr-secondary, #6b7280); text-transform: uppercase; letter-spacing: .03em; }
+
+/* ---------- Row action buttons ----------
+   `.btn-xs` isn't a real Bootstrap 5 size (only sm/lg exist), so every row of
+   edit/delete icon buttons across list pages and sub-tables (attribute values,
+   product variations, etc.) needs it defined here as a compact, inline,
+   circular icon button. Every listing wraps its row of these in Tabler's own
+   `.btn-list` (a flex row with a consistent gap) plus `.flex-nowrap` - by
+   default `.btn-list` wraps like any other flex row, which is exactly what let
+   these actions break onto a second line whenever the column got a little
+   tight; `.flex-nowrap` keeps view/edit/delete on one line no matter what. */
+.btn-xs {
+    width: 34px; height: 34px; padding: 0;
+    display: inline-flex; align-items: center; justify-content: center;
+    border-radius: 999px; border: none; font-size: .95rem;
+    vertical-align: middle;
+}
+.btn-list.flex-nowrap { overflow-x: auto; }
+form.d-inline, span.d-inline { display: inline-flex !important; vertical-align: middle; }
+.btn-xs.btn-outline-primary { background: #f6ecd9; color: var(--accent-gold-dark); }
+.btn-xs.btn-outline-info { background: #e7f1fc; color: #4299e1; }
+.btn-xs.btn-outline-danger { background: #fbe8e8; color: #d63939; }
+.btn-xs.btn-outline-warning { background: #fef1de; color: #c17300; }
+.btn-xs.btn-outline-secondary { background: #eef0f2; color: #6b7280; }
+.btn-xs.btn-outline-success { background: #e3f6e6; color: #2fb344; }
+.btn-xs.btn-outline-primary:hover { background: var(--accent-gold); color: #fff; }
+.btn-xs.btn-outline-info:hover { background: #4299e1; color: #fff; }
+.btn-xs.btn-outline-danger:hover { background: #d63939; color: #fff; }
+.btn-xs.btn-outline-warning:hover { background: #c17300; color: #fff; }
+.btn-xs.btn-outline-success:hover { background: #2fb344; color: #fff; }
+
+/* ---------- Badges (Tabler/Bootstrap 5 dropped bg-{color} badge modifiers; these are custom) ---------- */
+.badge-success { background: #e3f6e6 !important; color: #2fb344 !important; }
+.badge-danger { background: #fbe8e8 !important; color: #d63939 !important; }
+.badge-warning { background: #fef1de !important; color: #c17300 !important; }
+.badge-info { background: #e7f1fc !important; color: #4299e1 !important; }
+.badge-secondary { background: #eef0f2 !important; color: #6b7280 !important; }
+.badge-dark { background: #e5e7eb !important; color: #1f2937 !important; }
+.badge-purple { background: #f2e9fc !important; color: #8c3ce8 !important; }
+.badge-teal { background: #dff7f6 !important; color: #0ca5ae !important; }
+.badge-primary { background: #f6ecd9 !important; color: var(--accent-gold-dark) !important; }
+
+
+/* ---------- Login ---------- */
+body.login-page {
+    background: #fdf8f2;
+    position: relative;
+    overflow: hidden;
+}
+body.login-page::before, body.login-page::after {
+    content: '';
+    position: fixed;
+    bottom: -90px;
+    width: 280px;
+    height: 280px;
+    border-radius: 50%;
+    z-index: 0;
+}
+body.login-page::before { left: -70px; background: #dce9f5; }
+body.login-page::after { right: -70px; background: #fbe3d1; }
+.login-page .page.page-center { position: relative; z-index: 1; }
+.login-page .card { box-shadow: 0 20px 40px rgba(36, 26, 15, .12); }
+
+/* the logo artwork is a wide composite (icon + wordmark + tagline) - constrain it by
+   height with a class (beats Tabler/Bootstrap's `img { height: auto }` reset, which
+   otherwise overrides a plain height="" attribute and stretches it to the container width) */
+.auth-logo { display: inline-block; height: 72px; width: auto; max-width: 100%; }

@@ -1,0 +1,65 @@
+<div class="row">
+    <div class="col-md-6">
+        <div class="card card-primary">
+            <div class="card-header">
+                <h3 class="card-title">Edit Value - <%= attribute.name %></h3>
+            </div>
+            <form action="/panel/attributes/<%= attribute._id %>/values/<%= record._id %>/edit" method="POST" enctype="multipart/form-data">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Value <span class="required-mark">*</span></label>
+                            <input type="text" name="value" class="form-control" value="<%= record.value %>" required maxlength="50">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Code <span class="required-mark">*</span></label>
+                            <input type="text" name="code" class="form-control" value="<%= record.code %>" required maxlength="50">
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Display Value</label>
+                        <input type="text" name="displayValue" class="form-control" value="<%= record.displayValue || '' %>" maxlength="50">
+                    </div>
+
+                    <% if (attribute.inputType === 'COLOR') { %>
+                    <div class="mb-3">
+                        <label class="form-label">Hex Code</label>
+                        <input type="color" name="hexCode" class="form-control" value="<%= record.hexCode || '#000000' %>" style="max-width:100px;">
+                    </div>
+                    <% } %>
+
+                    <div class="mb-3">
+                        <label class="form-label">Swatch / Value Image</label>
+                        <input type="file" name="image" class="form-control" accept="image/*">
+                        <% if (mediaUrl) { %>
+                            <div class="mt-2"><img src="<%= mediaUrl %>" class="thumb-img" style="width:60px;height:60px;" onerror="this.style.visibility='hidden'"></div>
+                        <% } %>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Description</label>
+                        <textarea name="description" class="form-control" rows="2" maxlength="1000"><%= record.description || '' %></textarea>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Sort Order</label>
+                            <input type="number" name="sortOrder" class="form-control" value="<%= record.sortOrder %>">
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Status <span class="required-mark">*</span></label>
+                            <select name="status" class="form-select" required>
+                                <option value="ACTIVE" <%= record.status === 'ACTIVE' ? 'selected' : '' %>>Active</option>
+                                <option value="INACTIVE" <%= record.status === 'INACTIVE' ? 'selected' : '' %>>Inactive</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <button type="submit" class="btn btn-primary">Save</button>
+                    <a href="/panel/attributes/<%= attribute._id %>/edit" class="btn btn-default">Back</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

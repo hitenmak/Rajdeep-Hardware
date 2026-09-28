@@ -1,0 +1,26 @@
+<div class="text-center mb-4">
+    <img src="/resource/img/RD.png" alt="Rajdeep Hardware" class="auth-logo">
+</div>
+
+<div class="card card-md">
+    <div class="card-body">
+        <h2 class="h2 text-center mb-4">Enter the OTP sent to your email</h2>
+
+        <form action="/panel/forgot-password/verify-otp" method="POST">
+            <div class="mb-3">
+                <label class="form-label">OTP</label>
+                <div class="input-group input-group-flat">
+                    <input type="text" name="otp" class="form-control" placeholder="OTP" required autofocus maxlength="6">
+                    <span class="input-group-text"><i class="fas fa-key"></i></span>
+                </div>
+            </div>
+            <div class="form-footer">
+                <button type="submit" class="btn btn-primary w-100">Verify OTP</button>
+            </div>
+        </form>
+
+        <div class="text-center text-secondary mt-3">
+            <a href="/panel/forgot-password">Resend OTP</a>
+        </div>
+    </div>
+</div>

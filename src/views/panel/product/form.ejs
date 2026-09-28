@@ -1,0 +1,715 @@
+<style>
+    .nav-tabs .nav-link { cursor: pointer; }
+    .existing-image-card { width: 110px; display: inline-block; text-align: center; margin: 0 8px 8px 0; vertical-align: top; }
+    .existing-image-card img { width: 100%; height: 80px; object-fit: cover; border-radius: 4px; border: 1px solid #dee2e6; }
+    .variation-value-box { border: 1px solid #dee2e6; border-radius: 4px; padding: 8px; margin-bottom: 8px; }
+</style>
+
+<% if (record) { %>
+<div class="d-flex flex-wrap justify-content-end align-items-center gap-2 mb-3">
+    <a href="/panel/products/<%= record._id %>" class="btn btn-sm btn-outline-secondary"><i class="fas fa-eye"></i> View</a>
+    <form action="/panel/products/<%= record._id %>/duplicate" method="POST" class="d-inline" onsubmit="return confirm('Duplicate this product? Variation SKUs will be cleared.');">
+        <button type="submit" class="btn btn-sm btn-outline-secondary"><i class="fas fa-copy"></i> Duplicate</button>
+    </form>
+    <form action="/panel/products/<%= record._id %>/status" method="POST" class="d-inline" onsubmit="return confirm('Archive this product?');">
+        <input type="hidden" name="status" value="ARCHIVED">
+        <button type="submit" class="btn btn-sm btn-outline-secondary"><i class="fas fa-box-archive"></i> Archive</button>
+    </form>
+    <form action="/panel/products/<%= record._id %>/status" method="POST" class="d-inline" onsubmit="return confirm('Publish this product?');">
+        <input type="hidden" name="status" value="ACTIVE">
+        <button type="submit" class="btn btn-sm btn-success"><i class="fas fa-check"></i> Publish</button>
+    </form>
+    <span class="vr mx-1 d-none d-sm-inline"></span>
+    <form action="/panel/products/<%= record._id %>/delete" method="POST" class="d-inline" onsubmit="return confirm('Delete this product?');">
+        <button type="submit" class="btn btn-sm btn-outline-danger"><i class="fas fa-trash"></i> Delete</button>
+    </form>
+</div>
+<% } %>
+
+<form action="<%= record ? '/panel/products/' + record._id + '/edit' : '/panel/products/create' %>" method="POST" enctype="multipart/form-data" id="productForm">
+<div class="card">
+    <div class="card-header">
+        <ul class="nav nav-tabs card-header-tabs" id="productTabs" role="tablist">
+            <li class="nav-item"><a class="nav-link active" data-bs-toggle="tab" href="#tab-basic">Basic Information</a></li>
+            <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#tab-media">Media</a></li>
+            <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#tab-attributes">Attributes</a></li>
+            <li class="nav-item" id="variationsTabNav"><a class="nav-link" data-bs-toggle="tab" href="#tab-variations">Variations</a></li>
+            <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#tab-pricing">Pricing</a></li>
+            <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#tab-inventory">Inventory</a></li>
+            <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#tab-seo">SEO</a></li>
+            <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#tab-publish">Publish</a></li>
+        </ul>
+    </div>
+
+    <div class="card-body">
+        <div class="tab-content">
+
+            <!-- Basic Information -->
+            <div class="tab-pane fade show active" id="tab-basic">
+                <div class="row">
+                    <div class="col-md-8 mb-3">
+                        <label class="form-label">Product Name <span class="required-mark">*</span></label>
+                        <input type="text" id="productName" name="name" class="form-control" value="<%= record ? record.name : '' %>" required maxlength="150">
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Product Type <span class="required-mark">*</span></label>
+                        <select id="productType" name="productType" class="form-select" required>
+                            <option value="SIMPLE" <%= !record || record.productType === 'SIMPLE' ? 'selected' : '' %>>Simple Product</option>
+                            <option value="VARIABLE" <%= record && record.productType === 'VARIABLE' ? 'selected' : '' %>>Variable Product</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Product Code</label>
+                        <input type="text" name="productCode" class="form-control" value="<%= record ? (record.productCode || '') : '' %>" maxlength="50">
+                    </div>
+                    <div class="col-md-4 mb-3" id="baseSkuGroup">
+                        <label class="form-label">Base SKU <span class="required-mark">*</span></label>
+                        <input type="text" name="baseSku" id="baseSku" class="form-control" value="<%= record ? (record.baseSku || '') : '' %>" maxlength="50">
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Brand</label>
+                        <input type="text" name="brand" class="form-control" value="<%= record ? (record.brand || '') : '' %>" maxlength="50">
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Category <span class="required-mark">*</span></label>
+                        <select id="categoryId" name="categoryId" class="form-select" required>
+                            <option value="">Select category</option>
+                            <% categoryTree.forEach(function (c) { %>
+                                <option value="<%= c.id %>" <%= record && record.categoryId == c.id ? 'selected' : '' %>><%= c.name %></option>
+                            <% }); %>
+                        </select>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Subcategory</label>
+                        <select id="subcategoryId" name="subcategoryId" class="form-select">
+                            <option value="">Select subcategory</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Sub-subcategory</label>
+                        <select id="childCategoryId" name="childCategoryId" class="form-select">
+                            <option value="">Select sub-subcategory</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Short Description</label>
+                    <textarea name="shortDescription" class="form-control" rows="2" maxlength="500"><%= record ? (record.shortDescription || '') : '' %></textarea>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Description <span class="required-mark">*</span></label>
+                    <textarea name="description" class="form-control" rows="5" required><%= record ? (record.description || '') : '' %></textarea>
+                </div>
+            </div>
+
+            <!-- Media -->
+            <div class="tab-pane fade" id="tab-media">
+                <% if (mediaUrls && mediaUrls.length) { %>
+                <label class="form-label">Existing Images</label>
+                <div class="mb-3">
+                    <% mediaUrls.forEach(function (img) { %>
+                        <div class="existing-image-card">
+                            <img src="<%= img.url %>" onerror="this.style.visibility='hidden'">
+                            <div class="form-check form-check-inline mt-1">
+                                <input type="radio" class="form-check-input" name="primaryImage" id="primary_<%= img.image %>" value="<%= img.image %>" <%= img.isPrimary ? 'checked' : '' %>>
+                                <label class="form-check-label" style="font-size:11px;" for="primary_<%= img.image %>">Primary</label>
+                            </div>
+                            <div class="form-check">
+                                <input type="checkbox" class="form-check-input" name="removeImages" id="remove_<%= img.image %>" value="<%= img.image %>">
+                                <label class="form-check-label text-danger" style="font-size:11px;" for="remove_<%= img.image %>">Remove</label>
+                            </div>
+                        </div>
+                    <% }); %>
+                </div>
+                <% } %>
+                <div class="mb-3">
+                    <label class="form-label">Add Images <small class="form-hint">(first uploaded image becomes primary if none is set)</small></label>
+                    <input type="file" name="images" class="form-control" accept="image/*" multiple>
+                </div>
+            </div>
+
+            <!-- Attributes -->
+            <div class="tab-pane fade" id="tab-attributes">
+                <div id="resolvedAttributesContainer">
+                    <p class="text-muted">Select a category to load its attributes.</p>
+                </div>
+
+                <div id="extraAttributesSection" hidden>
+                    <hr>
+                    <h5>Additional Attributes <small class="form-hint">(outside the category's attribute set)</small></h5>
+                    <div id="extraAttributesContainer"></div>
+                    <button type="button" class="btn btn-sm btn-outline-secondary" id="addExtraAttributeBtn"><i class="fas fa-plus"></i> Add Additional Attribute</button>
+                </div>
+            </div>
+
+            <!-- Variations -->
+            <div class="tab-pane fade" id="tab-variations">
+                <div id="noVariationAttrMsg" class="text-muted">This product is a Simple Product and does not use variations.</div>
+
+                <div id="variationSetup" hidden>
+                    <h5>1. Select Variation Attributes</h5>
+                    <div id="variationAttributeChecklist" class="mb-3"></div>
+
+                    <div id="variationValuePickers" class="mb-3"></div>
+
+                    <button type="button" class="btn btn-primary mb-3" id="generateVariationsBtn"><i class="fas fa-cogs"></i> Generate Variations</button>
+
+                    <div class="table-responsive">
+                        <table class="table table-vcenter table-bordered table-sm" id="variationsTable">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Combination</th>
+                                    <th>SKU <span class="required-mark">*</span></th>
+                                    <th>Price</th>
+                                    <th>Raw Material</th>
+                                    <th>Weight (kg)</th>
+                                    <th>Qty</th>
+                                    <th>Status</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody id="variationsTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pricing -->
+            <div class="tab-pane fade" id="tab-pricing">
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Currency</label>
+                        <select name="currency" class="form-select">
+                            <% ['INR','USD','EUR','GBP'].forEach(function(c){ %>
+                                <option value="<%= c %>" <%= record && record.pricing && record.pricing.currency === c ? 'selected' : (!record && c === 'INR' ? 'selected' : '') %>><%= c %></option>
+                            <% }); %>
+                        </select>
+                    </div>
+                    <div class="col-md-4 mb-3" id="globalPriceGroup">
+                        <label class="form-label">Price <span class="required-mark">*</span></label>
+                        <input type="number" step="0.01" name="price" id="globalPrice" class="form-control" value="<%= record && record.pricing ? (record.pricing.price ?? '') : '' %>">
+                    </div>
+                </div>
+                <small class="form-hint" id="variablePriceNote" hidden>For Variable Products, price is set per variation instead (see the Variations tab).</small>
+            </div>
+
+            <!-- Inventory -->
+            <div class="tab-pane fade" id="tab-inventory">
+                <div class="row" id="simpleInventoryFields">
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label">Qty</label>
+                        <input type="number" name="globalStock" class="form-control" value="<%= record && record.inventory ? (record.inventory.globalStock ?? 0) : 0 %>">
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label">Low Stock Threshold</label>
+                        <input type="number" name="lowStockThreshold" class="form-control" value="<%= record && record.inventory ? (record.inventory.lowStockThreshold ?? 0) : 0 %>">
+                    </div>
+                </div>
+                <small class="form-hint" id="variableInventoryNote" hidden>For Variable Products, Qty is tracked per variation instead (see the Variations tab).</small>
+            </div>
+
+            <!-- SEO -->
+            <div class="tab-pane fade" id="tab-seo">
+                <div class="mb-3">
+                    <label class="form-label">URL Slug <span class="required-mark">*</span></label>
+                    <input type="text" name="slug" id="seoSlug" class="form-control" value="<%= record && record.seo ? (record.seo.slug || '') : '' %>" placeholder="auto-generated from product name if left blank">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">SEO Title</label>
+                    <input type="text" name="seoTitle" class="form-control" value="<%= record && record.seo ? (record.seo.title || '') : '' %>" maxlength="70">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">SEO Description</label>
+                    <textarea name="seoDescription" class="form-control" rows="2" maxlength="200"><%= record && record.seo ? (record.seo.description || '') : '' %></textarea>
+                </div>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">SEO Keywords <small class="form-hint">(comma separated)</small></label>
+                        <input type="text" name="seoKeywords" class="form-control" value="<%= record && record.seo ? (record.seo.keywords || []).join(', ') : '' %>">
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Canonical URL</label>
+                        <input type="text" name="canonicalUrl" class="form-control" value="<%= record && record.seo ? (record.seo.canonicalUrl || '') : '' %>">
+                    </div>
+                </div>
+                <div class="form-check form-switch">
+                    <input type="checkbox" class="form-check-input" id="searchable" name="searchable" value="true" <%= !record || !record.seo || record.seo.searchable !== false ? 'checked' : '' %>>
+                    <label class="form-check-label" for="searchable">Searchable</label>
+                </div>
+            </div>
+
+            <!-- Publish -->
+            <div class="tab-pane fade" id="tab-publish">
+                <div class="row">
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label">Status <span class="required-mark">*</span></label>
+                        <select name="status" class="form-select" required>
+                            <% ['DRAFT','ACTIVE','INACTIVE','ARCHIVED'].forEach(function(s){ %>
+                                <option value="<%= s %>" <%= record ? (record.status === s ? 'selected' : '') : (s === 'DRAFT' ? 'selected' : '') %>><%= s %></option>
+                            <% }); %>
+                        </select>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label">Visibility <span class="required-mark">*</span></label>
+                        <select name="visibility" class="form-select" required>
+                            <% ['PUBLIC','PRIVATE','CATALOGUE_ONLY'].forEach(function(v){ %>
+                                <option value="<%= v %>" <%= record ? (record.visibility === v ? 'selected' : '') : (v === 'PUBLIC' ? 'selected' : '') %>><%= v %></option>
+                            <% }); %>
+                        </select>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label">Sort Order</label>
+                        <input type="number" name="sortOrder" class="form-control" value="<%= record ? record.sortOrder : 0 %>">
+                    </div>
+                </div>
+                <div class="form-check form-switch mb-2">
+                    <input type="checkbox" class="form-check-input" id="featured" name="featured" value="true" <%= record && record.featured ? 'checked' : '' %>>
+                    <label class="form-check-label" for="featured">Featured Product</label>
+                </div>
+                <div class="form-check form-switch">
+                    <input type="checkbox" class="form-check-input" id="isNewArrival" name="isNewArrival" value="true" <%= record && record.isNewArrival ? 'checked' : '' %>>
+                    <label class="form-check-label" for="isNewArrival">New Product</label>
+                </div>
+            </div>
+
+        </div>
+    </div>
+    <div class="card-footer">
+        <button type="submit" class="btn btn-primary">Save Product</button>
+        <a href="/panel/products" class="btn btn-default">Cancel</a>
+    </div>
+</div>
+</form>
+
+<script>
+    // ---- embedded lookup data (this admin module has no backing REST API - everything below
+    // is driven from data rendered into the page at request time) ----
+    var CATEGORY_NODES = <%- JSON.stringify(categoryNodes) %>;
+    var RESOLVED_ATTRIBUTES = <%- JSON.stringify(resolvedAttributes) %>;
+    var ALL_ATTRIBUTES = <%- JSON.stringify(allAttributes) %>;
+    <%
+        var existingProductData = null;
+        if (record) {
+            existingProductData = {
+                categoryId: record.categoryId ? record.categoryId.toString() : '',
+                subcategoryId: record.subcategoryId ? record.subcategoryId.toString() : '',
+                childCategoryId: record.childCategoryId ? record.childCategoryId.toString() : '',
+                attributes: record.attributes || [],
+                variationAttributes: record.variationAttributes || [],
+                variations: (record.variations || []).map(function (v) { return Object.assign({}, v, { _id: v._id ? v._id.toString() : null }); }),
+            };
+        }
+    %>
+    var EXISTING_PRODUCT = <%- JSON.stringify(existingProductData) %>;
+
+    function el(tag, attrs, html) {
+        var node = document.createElement(tag);
+        Object.keys(attrs || {}).forEach(function (k) { node.setAttribute(k, attrs[k]); });
+        if (html !== undefined) node.innerHTML = html;
+        return node;
+    }
+
+    // ---------------------------------------------------------------
+    // Basic Info: Simple vs Variable toggle
+    // ---------------------------------------------------------------
+    function toggleProductType() {
+        var isVariable = document.getElementById('productType').value === 'VARIABLE';
+        document.getElementById('baseSkuGroup').hidden = isVariable;
+        document.getElementById('baseSku').required = !isVariable;
+        document.getElementById('noVariationAttrMsg').hidden = isVariable;
+        document.getElementById('variationSetup').hidden = !isVariable;
+        document.getElementById('simpleInventoryFields').style.display = isVariable ? 'none' : '';
+        document.getElementById('variableInventoryNote').hidden = !isVariable;
+        document.getElementById('globalPriceGroup').hidden = isVariable;
+        document.getElementById('globalPrice').required = !isVariable;
+        document.getElementById('variablePriceNote').hidden = !isVariable;
+    }
+    document.getElementById('productType').addEventListener('change', toggleProductType);
+
+    // ---------------------------------------------------------------
+    // Category -> Subcategory -> Sub-subcategory -> Resolved Attributes cascade
+    // ---------------------------------------------------------------
+    var currentResolved = [];
+
+    function populateChildren(parentId, selectEl, placeholder, selectedId) {
+        selectEl.innerHTML = '<option value="">' + placeholder + '</option>';
+        var parent = CATEGORY_NODES[parentId];
+        if (!parent) return;
+
+        (parent.children || []).forEach(function (childId) {
+            var child = CATEGORY_NODES[childId];
+            if (!child) return;
+            var opt = el('option', { value: child.id }, child.name);
+            if (selectedId && child.id === selectedId) opt.selected = true;
+            selectEl.appendChild(opt);
+        });
+    }
+
+    function populateSubcategories(selectSubId) {
+        populateChildren(document.getElementById('categoryId').value, document.getElementById('subcategoryId'), 'Select subcategory', selectSubId);
+    }
+
+    function populateChildCategories(selectChildId) {
+        populateChildren(document.getElementById('subcategoryId').value, document.getElementById('childCategoryId'), 'Select sub-subcategory', selectChildId);
+    }
+
+    function renderResolvedAttributes(existingValues) {
+        var categoryId = document.getElementById('categoryId').value;
+        var deepestId = document.getElementById('childCategoryId').value || document.getElementById('subcategoryId').value || categoryId;
+        var container = document.getElementById('resolvedAttributesContainer');
+        container.innerHTML = '';
+
+        var node = CATEGORY_NODES[deepestId] || CATEGORY_NODES[categoryId];
+        currentResolved = RESOLVED_ATTRIBUTES[deepestId] || RESOLVED_ATTRIBUTES[''] || [];
+
+        var extraSection = document.getElementById('extraAttributesSection');
+        extraSection.hidden = !(node && node.allowProductLevelAttributeAdditions);
+
+        var existingByAttr = {};
+        (existingValues || []).forEach(function (v) {
+            if (v.isProductLevelAddition) return;
+            existingByAttr[v.attributeId] = existingByAttr[v.attributeId] || [];
+            existingByAttr[v.attributeId].push(v);
+        });
+
+        if (!currentResolved.length) {
+            container.appendChild(el('p', { class: 'text-muted' }, 'No attributes are configured for this category yet.'));
+        }
+
+        currentResolved.forEach(function (attr, idx) {
+            var wrap = el('div', { class: 'mb-3' });
+            var label = el('label', { class: 'form-label' }, attr.name + (attr.isRequired ? ' <span class="required-mark">*</span>' : '') + (attr.unit ? ' <small class="form-hint">(' + attr.unit + ')</small>' : ''));
+            wrap.appendChild(label);
+
+            var existing = existingByAttr[attr.attributeId] || [];
+
+            if (attr.inputType === 'SELECT' || attr.inputType === 'COLOR') {
+                var select = el('select', { class: 'form-select' });
+                select.appendChild(el('option', { value: '' }, 'Select ' + attr.name));
+                attr.allowedValues.forEach(function (v) {
+                    var opt = el('option', { value: v.id }, v.value);
+                    if (existing[0] && existing[0].attributeValueId === v.id) opt.selected = true;
+                    select.appendChild(opt);
+                });
+                wrap.appendChild(hiddenAttrIdInput(idx, attr.attributeId));
+                select.name = 'attributes[' + idx + '][attributeValueId]';
+                wrap.appendChild(select);
+
+            } else if (attr.inputType === 'MULTI_SELECT') {
+                var box = el('div', { class: 'border rounded p-2' });
+                attr.allowedValues.forEach(function (v, vi) {
+                    var checked = existing.some(function (e) { return e.attributeValueId === v.id; });
+                    var rowIdx = idx + '_' + vi;
+                    var check = el('div', { class: 'form-check' });
+                    check.innerHTML =
+                        '<input type="checkbox" class="form-check-input" id="mattr_' + rowIdx + '" ' + (checked ? 'checked' : '') + ' data-attr="' + attr.attributeId + '" data-value="' + v.id + '">' +
+                        '<label class="form-check-label" for="mattr_' + rowIdx + '">' + v.value + '</label>';
+                    box.appendChild(check);
+                });
+                wrap.appendChild(box);
+                wrap.setAttribute('data-multiselect-attr', attr.attributeId);
+
+            } else if (attr.inputType === 'BOOLEAN') {
+                var boolSelect = el('select', { class: 'form-select' });
+                ['', 'true', 'false'].forEach(function (v) {
+                    var opt = el('option', { value: v }, v === '' ? 'Select' : (v === 'true' ? 'Yes' : 'No'));
+                    if (existing[0] && existing[0].textValue === v) opt.selected = true;
+                    boolSelect.appendChild(opt);
+                });
+                wrap.appendChild(hiddenAttrIdInput(idx, attr.attributeId));
+                boolSelect.name = 'attributes[' + idx + '][textValue]';
+                wrap.appendChild(boolSelect);
+
+            } else if (attr.inputType === 'NUMBER') {
+                wrap.appendChild(hiddenAttrIdInput(idx, attr.attributeId));
+                var numInput = el('input', { type: 'number', step: '0.01', class: 'form-control', name: 'attributes[' + idx + '][numericValue]' });
+                if (existing[0]) numInput.value = existing[0].numericValue != null ? existing[0].numericValue : '';
+                wrap.appendChild(numInput);
+
+            } else if (attr.inputType === 'DATE') {
+                wrap.appendChild(hiddenAttrIdInput(idx, attr.attributeId));
+                var dateInput = el('input', { type: 'date', class: 'form-control', name: 'attributes[' + idx + '][textValue]' });
+                if (existing[0]) dateInput.value = existing[0].textValue || '';
+                wrap.appendChild(dateInput);
+
+            } else { // TEXT, MEASUREMENT
+                wrap.appendChild(hiddenAttrIdInput(idx, attr.attributeId));
+                var textInput = el('input', { type: 'text', class: 'form-control', name: 'attributes[' + idx + '][textValue]' });
+                if (existing[0]) textInput.value = existing[0].textValue || '';
+                wrap.appendChild(textInput);
+            }
+
+            container.appendChild(wrap);
+        });
+    }
+
+    function hiddenAttrIdInput(idx, attributeId) {
+        return el('input', { type: 'hidden', name: 'attributes[' + idx + '][attributeId]', value: attributeId });
+    }
+
+    document.getElementById('categoryId').addEventListener('change', function () {
+        populateSubcategories(null);
+        populateChildCategories(null);
+        renderResolvedAttributes(null);
+        renderVariationSetup(null);
+    });
+    document.getElementById('subcategoryId').addEventListener('change', function () {
+        populateChildCategories(null);
+        renderResolvedAttributes(EXISTING_PRODUCT ? EXISTING_PRODUCT.attributes : null);
+        renderVariationSetup(EXISTING_PRODUCT ? EXISTING_PRODUCT.variationAttributes : null);
+    });
+    document.getElementById('childCategoryId').addEventListener('change', function () {
+        renderResolvedAttributes(EXISTING_PRODUCT ? EXISTING_PRODUCT.attributes : null);
+        renderVariationSetup(EXISTING_PRODUCT ? EXISTING_PRODUCT.variationAttributes : null);
+    });
+
+    // ---------------------------------------------------------------
+    // Multi-select attribute rows: right before submit, expand checked boxes into attributes[] rows
+    // ---------------------------------------------------------------
+    document.getElementById('productForm').addEventListener('submit', function () {
+        var container = document.getElementById('resolvedAttributesContainer');
+        var multiWraps = container.querySelectorAll('[data-multiselect-attr]');
+        var nextIdx = container.querySelectorAll('input[name^="attributes["]').length + 50; // headroom to avoid index collisions
+        multiWraps.forEach(function (wrap) {
+            var attributeId = wrap.getAttribute('data-multiselect-attr');
+            wrap.querySelectorAll('input[type=checkbox]:checked').forEach(function (cb) {
+                wrap.appendChild(el('input', { type: 'hidden', name: 'attributes[' + (nextIdx) + '][attributeId]', value: attributeId }));
+                wrap.appendChild(el('input', { type: 'hidden', name: 'attributes[' + (nextIdx) + '][attributeValueId]', value: cb.getAttribute('data-value') }));
+                nextIdx++;
+            });
+        });
+    });
+
+    // ---------------------------------------------------------------
+    // Additional (product-level) attributes
+    // ---------------------------------------------------------------
+    var extraAttrIndex = 0;
+    function addExtraAttributeRow(attributeId, value) {
+        var container = document.getElementById('extraAttributesContainer');
+        var idx = extraAttrIndex++;
+        var row = el('div', { class: 'row align-items-end mb-2', 'data-extra-row': idx });
+        var select = el('select', { class: 'form-select', name: 'extraAttributes[' + idx + '][attributeId]' });
+        select.appendChild(el('option', { value: '' }, 'Select attribute'));
+        ALL_ATTRIBUTES.forEach(function (a) {
+            var opt = el('option', { value: a.id }, a.name);
+            if (attributeId === a.id) opt.selected = true;
+            select.appendChild(opt);
+        });
+        var colSelect = el('div', { class: 'col-md-5' });
+        colSelect.appendChild(select);
+
+        var input = el('input', { type: 'text', class: 'form-control', name: 'extraAttributes[' + idx + '][customValue]', placeholder: 'Value', value: value || '' });
+        var colInput = el('div', { class: 'col-md-5' });
+        colInput.appendChild(input);
+
+        var removeBtn = el('button', { type: 'button', class: 'btn btn-outline-danger btn-sm' }, '<i class="fas fa-times"></i>');
+        removeBtn.addEventListener('click', function () { row.remove(); });
+        var colBtn = el('div', { class: 'col-md-2' });
+        colBtn.appendChild(removeBtn);
+
+        row.appendChild(colSelect); row.appendChild(colInput); row.appendChild(colBtn);
+        container.appendChild(row);
+    }
+    document.getElementById('addExtraAttributeBtn').addEventListener('click', function () { addExtraAttributeRow(); });
+
+    // ---------------------------------------------------------------
+    // Variations: attribute + value selection, cartesian generation, matrix table
+    // ---------------------------------------------------------------
+    var selectedVariationValues = {}; // { attributeId: [valueId, ...] }
+
+    function renderVariationSetup(existingSelections) {
+        var checklist = document.getElementById('variationAttributeChecklist');
+        var pickers = document.getElementById('variationValuePickers');
+        checklist.innerHTML = '';
+        pickers.innerHTML = '';
+
+        var variationEligible = currentResolved.filter(function (a) { return a.isVariationAttribute; });
+        var existingMap = {};
+        (existingSelections || []).forEach(function (s) { existingMap[s.attributeId] = s.valueIds; });
+
+        variationEligible.forEach(function (attr) {
+            var isChecked = !!existingMap[attr.attributeId];
+            var check = el('div', { class: 'form-check form-check-inline' });
+            check.innerHTML = '<input type="checkbox" class="form-check-input variation-attr-check" id="vattr_' + attr.attributeId + '" data-attr="' + attr.attributeId + '" ' + (isChecked ? 'checked' : '') + '>' +
+                '<label class="form-check-label" for="vattr_' + attr.attributeId + '">' + attr.name + '</label>';
+            checklist.appendChild(check);
+
+            var box = el('div', { class: 'variation-value-box', 'data-value-box': attr.attributeId, id: 'vbox_' + attr.attributeId });
+            box.hidden = !isChecked;
+            box.appendChild(el('strong', {}, attr.name + ' values:'));
+            var valuesWrap = el('div', { class: 'mt-1' });
+            attr.allowedValues.forEach(function (v) {
+                var checked = isChecked && (existingMap[attr.attributeId] || []).indexOf(v.id) !== -1;
+                var vcheck = el('div', { class: 'form-check form-check-inline' });
+                vcheck.innerHTML = '<input type="checkbox" class="form-check-input variation-value-check" id="vval_' + attr.attributeId + '_' + v.id + '" data-attr="' + attr.attributeId + '" data-value="' + v.id + '" data-value-label="' + v.value + '" ' + (checked ? 'checked' : '') + '>' +
+                    '<label class="form-check-label" for="vval_' + attr.attributeId + '_' + v.id + '">' + v.value + '</label>';
+                valuesWrap.appendChild(vcheck);
+            });
+            box.appendChild(valuesWrap);
+            pickers.appendChild(box);
+        });
+
+        checklist.querySelectorAll('.variation-attr-check').forEach(function (cb) {
+            cb.addEventListener('change', function () {
+                document.getElementById('vbox_' + cb.getAttribute('data-attr')).hidden = !cb.checked;
+            });
+        });
+    }
+
+    function getCombinationKey(combo) {
+        return combo.map(function (c) { return c.attributeId + ':' + c.attributeValueId; }).sort().join('|');
+    }
+
+    function readExistingVariationRows() {
+        var rows = {};
+        document.querySelectorAll('#variationsTableBody tr').forEach(function (tr) {
+            var key = tr.getAttribute('data-key');
+            if (!key) return;
+            rows[key] = {
+                sku: tr.querySelector('[data-field=sku]').value,
+                price: tr.querySelector('[data-field=price]').value,
+                costPrice: tr.querySelector('[data-field=costPrice]').value,
+                stockQuantity: tr.querySelector('[data-field=stockQuantity]').value,
+                lowStockThreshold: tr.querySelector('[data-field=lowStockThreshold]').value,
+                backorderAllowed: tr.querySelector('[data-field=backorderAllowed]').checked,
+                status: tr.querySelector('[data-field=status]').value,
+                rawMaterial: {
+                    type: tr.querySelector('[data-field=rawMaterialType]').value,
+                    weight: tr.querySelector('[data-field=rawMaterialWeight]').value,
+                },
+                existingId: tr.getAttribute('data-existing-id') || '',
+            };
+        });
+        return rows;
+    }
+
+    function buildVariationRow(rowIndex, combo, data, existingId) {
+        data = data || {};
+        var tr = el('tr', { 'data-key': getCombinationKey(combo) });
+        if (existingId) tr.setAttribute('data-existing-id', existingId);
+
+        var comboLabel = combo.map(function (c) { return c.label; }).join(' / ');
+        tr.appendChild(el('td', {}, comboLabel));
+
+        combo.forEach(function (c, i) {
+            tr.appendChild(el('input', { type: 'hidden', name: 'variations[' + rowIndex + '][attributeValues][' + i + '][attributeId]', value: c.attributeId }));
+            tr.appendChild(el('input', { type: 'hidden', name: 'variations[' + rowIndex + '][attributeValues][' + i + '][attributeValueId]', value: c.attributeValueId }));
+        });
+
+        function td(field, type, value, extra) {
+            var input = el('input', Object.assign({ type: type, class: 'form-control form-control-sm', name: 'variations[' + rowIndex + '][' + field + ']', 'data-field': field }, extra || {}));
+            if (type !== 'checkbox') input.value = value != null ? value : '';
+            else if (value) input.checked = true;
+            var cell = el('td');
+            cell.appendChild(input);
+            return cell;
+        }
+
+        tr.appendChild(td('sku', 'text', data.sku, { required: 'required' }));
+        tr.appendChild(td('price', 'number', data.price, { step: '0.01' }));
+
+        var materialCell = el('td');
+        var materialSelect = el('select', { class: 'form-select form-select-sm', name: 'variations[' + rowIndex + '][rawMaterial][type]', 'data-field': 'rawMaterialType' });
+        [{ v: '', label: 'None' }, { v: 'BRASS', label: 'Brass' }, { v: 'ALUMINIUM', label: 'Aluminium' }].forEach(function (opt) {
+            var o = el('option', { value: opt.v }, opt.label);
+            if ((data.rawMaterial && data.rawMaterial.type || '') === opt.v) o.selected = true;
+            materialSelect.appendChild(o);
+        });
+        materialCell.appendChild(materialSelect);
+        tr.appendChild(materialCell);
+
+        var weightCell = el('td');
+        var weightInput = el('input', { type: 'number', step: '0.001', min: '0', class: 'form-control form-control-sm', name: 'variations[' + rowIndex + '][rawMaterial][weight]', 'data-field': 'rawMaterialWeight' });
+        weightInput.value = (data.rawMaterial && data.rawMaterial.weight != null) ? data.rawMaterial.weight : '';
+        weightCell.appendChild(weightInput);
+        tr.appendChild(weightCell);
+
+        tr.appendChild(td('stockQuantity', 'number', data.stockQuantity != null ? data.stockQuantity : 0));
+
+        var statusCell = el('td');
+        var statusSelect = el('select', { class: 'form-select form-select-sm', name: 'variations[' + rowIndex + '][status]', 'data-field': 'status' });
+        ['ACTIVE', 'INACTIVE'].forEach(function (s) {
+            var opt = el('option', { value: s }, s);
+            if ((data.status || 'ACTIVE') === s) opt.selected = true;
+            statusSelect.appendChild(opt);
+        });
+        statusCell.appendChild(statusSelect);
+        tr.appendChild(statusCell);
+
+        // hidden fields not worth a visible column but still needed
+        tr.appendChild(el('input', { type: 'hidden', name: 'variations[' + rowIndex + '][costPrice]', value: data.costPrice || '', 'data-field': 'costPrice' }));
+        tr.appendChild(el('input', { type: 'hidden', name: 'variations[' + rowIndex + '][lowStockThreshold]', value: data.lowStockThreshold || 0, 'data-field': 'lowStockThreshold' }));
+        tr.appendChild(el('input', { type: 'checkbox', hidden: true, name: 'variations[' + rowIndex + '][backorderAllowed]', 'data-field': 'backorderAllowed' }));
+        if (data.backorderAllowed) tr.querySelector('[data-field=backorderAllowed]').checked = true;
+
+        var removeCell = el('td');
+        var removeBtn = el('button', { type: 'button', class: 'btn btn-xs btn-outline-danger' }, '<i class="fas fa-times"></i>');
+        removeBtn.addEventListener('click', function () { tr.remove(); });
+        removeCell.appendChild(removeBtn);
+        tr.appendChild(removeCell);
+
+        return tr;
+    }
+
+    function generateVariations() {
+        var checkedAttrs = Array.prototype.slice.call(document.querySelectorAll('.variation-attr-check:checked')).map(function (cb) { return cb.getAttribute('data-attr'); });
+
+        var valueSets = checkedAttrs.map(function (attrId) {
+            return Array.prototype.slice.call(document.querySelectorAll('.variation-value-check[data-attr="' + attrId + '"]:checked')).map(function (cb) {
+                return { attributeId: attrId, attributeValueId: cb.getAttribute('data-value'), label: cb.getAttribute('data-value-label') };
+            });
+        }).filter(function (set) { return set.length; });
+
+        if (!valueSets.length) { alert('Select at least one variation attribute and value.'); return; }
+
+        var combinations = valueSets.reduce(function (acc, set) {
+            if (!acc.length) return set.map(function (v) { return [v]; });
+            var next = [];
+            acc.forEach(function (combo) { set.forEach(function (v) { next.push(combo.concat([v])); }); });
+            return next;
+        }, []);
+
+        var existingRows = readExistingVariationRows();
+        var body = document.getElementById('variationsTableBody');
+        body.innerHTML = '';
+
+        combinations.forEach(function (combo, i) {
+            var key = getCombinationKey(combo);
+            var existing = existingRows[key];
+            body.appendChild(buildVariationRow(i, combo, existing, existing ? existing.existingId : null));
+        });
+    }
+    document.getElementById('generateVariationsBtn').addEventListener('click', generateVariations);
+
+    // ---------------------------------------------------------------
+    // Initial render (page load)
+    // ---------------------------------------------------------------
+    toggleProductType();
+
+    if (EXISTING_PRODUCT) {
+        populateSubcategories(EXISTING_PRODUCT.subcategoryId);
+        populateChildCategories(EXISTING_PRODUCT.childCategoryId);
+        renderResolvedAttributes(EXISTING_PRODUCT.attributes);
+        renderVariationSetup(EXISTING_PRODUCT.variationAttributes);
+
+        // pre-fill extra (product-level) attributes
+        (EXISTING_PRODUCT.attributes || []).filter(function (a) { return a.isProductLevelAddition; }).forEach(function (a) {
+            addExtraAttributeRow(a.attributeId, a.customValue || a.textValue);
+        });
+
+        // pre-fill existing variations into the matrix as-is (no re-generation needed until admin changes selections)
+        var body = document.getElementById('variationsTableBody');
+        (EXISTING_PRODUCT.variations || []).forEach(function (v, i) {
+            var combo = (v.attributeValues || []).map(function (av) {
+                var attrDef = currentResolved.find(function (a) { return a.attributeId === av.attributeId; });
+                var valDef = attrDef ? attrDef.allowedValues.find(function (val) { return val.id === av.attributeValueId; }) : null;
+                return { attributeId: av.attributeId, attributeValueId: av.attributeValueId, label: valDef ? valDef.value : av.attributeValueId };
+            });
+            body.appendChild(buildVariationRow(i, combo, v, v._id));
+        });
+    }
+</script>

@@ -1,0 +1,22 @@
+<% if (pagination && pagination.totalPages > 1) { %>
+    <% const qs = (p) => {
+        const params = new URLSearchParams({ ...filters });
+        params.set('page', p);
+        return '?' + params.toString();
+    } %>
+    <nav>
+        <ul class="pagination justify-content-end mb-0">
+            <li class="page-item <%= pagination.hasPrevPage ? '' : 'disabled' %>">
+                <a class="page-link" href="<%= qs(pagination.prevPage || 1) %>">&laquo;</a>
+            </li>
+            <% for (let p = 1; p <= pagination.totalPages; p++) { %>
+                <li class="page-item <%= p === pagination.page ? 'active' : '' %>">
+                    <a class="page-link" href="<%= qs(p) %>"><%= p %></a>
+                </li>
+            <% } %>
+            <li class="page-item <%= pagination.hasNextPage ? '' : 'disabled' %>">
+                <a class="page-link" href="<%= qs(pagination.nextPage || pagination.totalPages) %>">&raquo;</a>
+            </li>
+        </ul>
+    </nav>
+<% } %>
