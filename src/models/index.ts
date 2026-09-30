@@ -18,6 +18,7 @@ import * as DealerDiscount from './dealer-discount';
 import * as DealerSession from './dealer-session';
 import * as DealerCart from './dealer-cart';
 import * as Counter from './counter';
+import * as Faq from './faq';
 import * as PurchaseOrder from './purchase-order';
 import * as PurchaseOrderAssignment from './purchase-order-assignment';
 import * as PurchaseOrderStatusHistory from './purchase-order-status-history';
@@ -45,6 +46,7 @@ export default {
     DealerSession,
     DealerCart,
     Counter,
+    Faq,
     PurchaseOrder,
     PurchaseOrderAssignment,
     PurchaseOrderStatusHistory,

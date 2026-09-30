@@ -108,6 +108,23 @@
     </div>
     <% } %>
 
+    <% if (bank) { %>
+    <div class="box">
+        <div class="label">Bank Details</div>
+        <% if (bank.bankName) { %><strong><%= bank.bankName %></strong><br><% } %>
+        <% if (bank.accountName) { %><%= bank.accountName %><br><% } %>
+        <% if (bank.accountNumber) { %>A/C: <%= bank.accountNumber %><% } %><% if (bank.ifscCode) { %> | IFSC: <%= bank.ifscCode %><% } %><% if (bank.branch) { %> | <%= bank.branch %><% } %>
+        <% if (bank.upiId) { %><br>UPI: <%= bank.upiId %><% } %>
+    </div>
+    <% } %>
+
+    <% if (terms) { %>
+    <div class="box">
+        <div class="label">Terms &amp; Conditions</div>
+        <div style="white-space: pre-line; font-size: 10px; color: #4b5563;"><%= terms %></div>
+    </div>
+    <% } %>
+
     <div class="row signatures">
         <div class="sign">Dealer Signature</div>
         <div class="sign" style="text-align: right">For <%= company.name %> - Authorized Signatory</div>

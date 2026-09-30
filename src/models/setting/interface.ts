@@ -74,6 +74,21 @@ export interface ISetting extends Document {
         }
     };
 
+    bankDetails: {
+        bankName: string | null;
+        accountName: string | null;
+        accountNumber: string | null;
+        ifscCode: string | null;
+        branch: string | null;
+        upiId: string | null;
+    };
+
+    legal: {
+        termsAndConditions: string | null;
+        purchaseOrderTerms: string | null;
+        updatedAt: Date | null;
+    };
+
     appDetails: {
         androidApp: {
             apkUrl: string | null;

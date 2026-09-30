@@ -137,4 +137,10 @@ export const PREFERENCE = {
 
 export const CONFIG = {
     SUPPORT_FOUND: `Support details found`,
+    FAQ_FOUND: `FAQs found`,
+    TERMS_FOUND: `Terms & conditions found`,
+}
+
+export const OFFER = {
+    FOUND: `Clearance offers found`,
 }

@@ -1,0 +1,76 @@
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">FAQs</h3>
+        <div class="card-tools">
+            <% if (can('FAQ.CREATE')) { %>
+                <a href="/panel/faqs/create" class="btn btn-sm btn-primary"><i class="fas fa-plus"></i> Add FAQ</a>
+            <% } %>
+        </div>
+    </div>
+
+    <div class="card-body border-bottom">
+        <form method="GET" action="/panel/faqs" class="row align-items-end">
+            <div class="col-md-5 mb-3">
+                <label class="form-label mb-1">Search</label>
+                <input type="text" name="search" value="<%= filters.search || '' %>" class="form-control" placeholder="Question">
+            </div>
+            <div class="col-md-3 mb-3">
+                <label class="form-label mb-1">Status</label>
+                <select name="status" class="form-select">
+                    <option value="">All</option>
+                    <% ['ACTIVE', 'INACTIVE'].forEach(function (s) { %>
+                        <option value="<%= s %>" <%= filters.status === s ? 'selected' : '' %>><%= s %></option>
+                    <% }); %>
+                </select>
+            </div>
+            <div class="col-md-2 mb-3">
+                <button type="submit" class="btn btn-secondary w-100"><i class="fas fa-filter"></i> Filter</button>
+            </div>
+        </form>
+    </div>
+
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-vcenter table-striped mb-0 card-table">
+                <thead>
+                    <tr>
+                        <th style="width: 70px;">Order</th>
+                        <th>Question</th>
+                        <th>Status</th>
+                        <th style="width: 100px;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% if (!records || !records.length) { %>
+                        <tr><td colspan="4" class="text-center text-muted py-4">No FAQs found</td></tr>
+                    <% } %>
+                    <% records.forEach(function (r) { %>
+                        <tr>
+                            <td><%= r.sortOrder || 0 %></td>
+                            <td>
+                                <div class="fw-bold"><%= r.question %></div>
+                                <div class="text-muted small text-truncate" style="max-width: 640px;"><%= r.answer %></div>
+                            </td>
+                            <td><span class="badge <%= r.status === 'ACTIVE' ? 'badge-success' : 'badge-secondary' %>"><%= r.status %></span></td>
+                            <td>
+                                <div class="btn-list flex-nowrap">
+                                    <% if (can('FAQ.UPDATE')) { %>
+                                        <a href="/panel/faqs/<%= r._id %>/edit" class="btn btn-xs btn-outline-primary" title="Edit"><i class="fas fa-edit"></i></a>
+                                    <% } %>
+                                    <% if (can('FAQ.DELETE')) { %>
+                                        <form action="/panel/faqs/<%= r._id %>/delete" method="POST" class="d-inline" onsubmit="return confirm('Delete this FAQ?');">
+                                            <button type="submit" class="btn btn-xs btn-outline-danger" title="Delete"><i class="fas fa-trash"></i></button>
+                                        </form>
+                                    <% } %>
+                                </div>
+                            </td>
+                        </tr>
+                    <% }); %>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="card-footer">
+        <%- include('../partials/pagination') %>
+    </div>
+</div>

@@ -51,7 +51,23 @@ const SETTING_TRACKED_FIELDS = [
     { key: 'email.fromEmail', label: 'From Email' },
     { key: 'contactDetails.email', label: 'Contact Email' },
     { key: 'contactDetails.phone', label: 'Contact Phone' },
+    { key: 'bankDetails.bankName', label: 'Bank Name' },
+    { key: 'bankDetails.accountName', label: 'Account Name' },
+    { key: 'bankDetails.accountNumber', label: 'Account Number' },
+    { key: 'bankDetails.ifscCode', label: 'IFSC Code' },
+    { key: 'bankDetails.branch', label: 'Branch' },
+    { key: 'bankDetails.upiId', label: 'UPI ID' },
+    { key: 'legal.termsAndConditions', label: 'Terms & Conditions' },
+    { key: 'legal.purchaseOrderTerms', label: 'Purchase Order Terms' },
 ];
+
+const MAX_LEGAL_TEXT_LENGTH = 50000;
+const IFSC_REGEX = /^[A-Z]{4}0[A-Z0-9]{6}$/;
+
+const trimOrNull = (value: any, max: number = 200): string | null => {
+    const text = String(value ?? '').trim();
+    return text ? text.slice(0, max) : null;
+}
 
 export default class SettingController {
 
@@ -101,7 +117,33 @@ export default class SettingController {
             // otherwise silently zero them out on every save of any tab).
             const previousRates = record?.pricing || {};
 
+            const ifscCode = trimOrNull(req.body?.ifscCode, 11)?.toUpperCase() || null;
+            if (ifscCode && !IFSC_REGEX.test(ifscCode)) throw new Error('IFSC code must look like HDFC0001234.');
+            if (String(req.body?.termsAndConditions ?? '').length > MAX_LEGAL_TEXT_LENGTH || String(req.body?.purchaseOrderTerms ?? '').length > MAX_LEGAL_TEXT_LENGTH) {
+                throw new Error(`Terms text must be at most ${MAX_LEGAL_TEXT_LENGTH} characters.`);
+            }
+
+            const legal = {
+                termsAndConditions: trimOrNull(req.body?.termsAndConditions, MAX_LEGAL_TEXT_LENGTH),
+                purchaseOrderTerms: trimOrNull(req.body?.purchaseOrderTerms, MAX_LEGAL_TEXT_LENGTH),
+            };
+            const legalChanged = legal.termsAndConditions !== (record?.legal?.termsAndConditions ?? null)
+                || legal.purchaseOrderTerms !== (record?.legal?.purchaseOrderTerms ?? null);
+
             const newValues = {
+                bankDetails: {
+                    bankName: trimOrNull(req.body?.bankName),
+                    accountName: trimOrNull(req.body?.bankAccountName),
+                    accountNumber: trimOrNull(req.body?.bankAccountNumber, 34),
+                    ifscCode,
+                    branch: trimOrNull(req.body?.bankBranch),
+                    upiId: trimOrNull(req.body?.upiId, 100),
+                },
+                legal: {
+                    ...legal,
+                    // lets the app show "Last updated" without guessing from unrelated saves
+                    updatedAt: legalChanged ? new Date() : (record?.legal?.updatedAt ?? null),
+                },
                 general: {
                     companyName: req.body?.companyName || null,
                     timezone: req.body?.timezone || null,
@@ -187,6 +229,8 @@ export default class SettingController {
             const factor = body.direction === 'INCREASE' ? (1 + body.percentage / 100) : (1 - body.percentage / 100);
             if (factor < 0) throw new Error('A decrease of 100% or more would make prices negative.');
 
+            const watch = await Core.ProductWatch.capture(beforeProducts.map((p: any) => p._id));
+
             await Promise.all([
                 // a Simple product's (and a Variable product's own base) price {
                 Product.updateMany(
@@ -255,6 +299,8 @@ export default class SettingController {
             });
             if (logEntries.length) await ActivityLog.insertMany(logEntries);
             // }
+
+            Core.ProductWatch.dispatch(watch);
 
             req.setFlash?.('success', `Prices ${verb} by ${body.percentage}% for ${totalProducts} product(s) in the selected category.`);
             return res.redirect('/panel/settings');

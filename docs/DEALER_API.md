@@ -108,7 +108,7 @@ Every price below is **this dealer's price**. It resolves in this order: a produ
 
 ```json
 {
-  "id", "name", "sku", "imageUrl", "isVariable", "isNewArrival",
+  "id", "name", "sku", "imageUrl", "isVariable", "isNewArrival", "isClearance",
   "price": { "currency": "INR", "dealerPrice": 1250, "mrp": 1800, "discountPercent": 30.56, "isFromPrice": false },
   "stock": { "inStock": true, "availableQuantity": 342, "lowStock": false }
 }
@@ -120,7 +120,9 @@ Every price below is **this dealer's price**. It resolves in this order: a produ
 
 ### `/home`
 
-`{ dealer: { businessName, contactName }, unreadNotificationCount, newArrivals: [card], categories: [category] }`
+`{ dealer: { businessName, contactName }, unreadNotificationCount, clearanceCount, newArrivals: [card], categories: [category] }`
+
+`clearanceCount` is the number of clearance products currently in stock. Use it for the Offer tab badge or the "Shop Now" banner.
 
 Category: `{ id, parentId, level, name, slug, description, imageUrl, itemCount, hasChildren }`
 
@@ -137,6 +139,7 @@ Body `{ parentId?, search?, page, limit }`. Without `parentId` it returns root c
 | `categoryId` | includes products in its sub-categories |
 | `inStock` | boolean |
 | `newArrival` | boolean |
+| `clearance` | boolean: only products flagged as Clearance Stock |
 | `sort` | `recommended` (default) · `newest` · `name_asc` · `name_desc` |
 | `page`, `limit` | |
 
@@ -170,6 +173,10 @@ To pick a variant, find the entry in `variants` whose `attributes` match the sel
 | `/catalogue/search/recent` | `{}` | `{ records: [{ term, searchedAt }] }`: newest first, max 10 |
 | `/catalogue/search/recent/remove` | `{ term }` | updated `records` |
 | `/catalogue/search/recent/clear` | `{}` | `{ records: [] }` |
+
+### `/offer/list` - Offer tab
+
+Body `{ categoryId?, search?, page, limit }`. Returns `{ records: [card], pagination }`: products the admin flagged **Clearance Stock** that are still in stock, with the biggest saving first on each page.
 
 ---
 
@@ -231,6 +238,8 @@ Quantity must be a whole number from 1 to 100,000. A cart holds at most 100 line
 
 `months` gives the month chips (newest first, up to 12). Cancelled and rejected orders are excluded from `thisMonthAmount` and `averageOrderValue`.
 
+**Stock:** placing a PO doesn't hold stock. When admin approves it, the approved quantities are reserved and disappear from `availableQuantity` for every dealer. They're deducted from stock on delivery, and released again if the PO is rejected or cancelled.
+
 Order card: `{ id, poNumber, orderDate, itemCount, totalQuantity, totalAmount, currency, status: { key, label, group } }`
 
 Order detail adds: `statusMessage, lastUpdatedAt, source, shippingAddress, specialInstructions, items[{ id, productId, variationId, name, sku, variantLabel, quantity, approvedQuantity, rejectedQuantity, unitPrice, mrp, tax, total }], summary{ subtotal, discount, tax, shipping, total }, timeline[{ status, at }]`
@@ -284,23 +293,46 @@ Returns `{ profileImageUrl: null }`.
 | `/notification/read` | `{ notificationId }` | `{ unreadCount }` |
 | `/notification/read-all` | `{}` | `{ unreadCount: 0 }` |
 
-Order-status notifications have `type: "ORDER_STATUS"`, `navigateTo: "ORDER_DETAILS"` and `data: { orderId, poNumber, status }`. Push messages carry the same fields.
+Push messages carry the same `type`, `navigateTo` and `data` as the in-app record.
+
+| `type` | Sent when | `navigateTo` | `data` |
+|---|---|---|---|
+| `ORDER_STATUS` | Admin reviews or moves one of your POs (approved, processing, out for delivery, delivered, rejected, cancelled) | `ORDER_DETAILS` | `{ orderId, poNumber, status }` |
+| `PRICE_UPDATED` | A product's price changes and **your** price actually moved. Dealers on a fixed price for that product aren't told. | `PRODUCT_DETAILS` | `{ productId, oldPrice, newPrice }` |
+| `NEW_ARRIVAL` | A product is published to the catalogue, or flagged "New Product" | `PRODUCT_DETAILS` | `{ productId }` |
+| `LOW_STOCK` | A product you've ordered before drops to its low-stock level | `PRODUCT_DETAILS` | `{ productId, availableQuantity }` |
+
+When a bulk admin action affects more than 3 products at once, you get a single summary instead (for example "Prices changed for 12 products"). It has `navigateTo: "CATALOGUE"` (or `"NEW_ARRIVALS"`) and `data: { productIds: [...] }`.
 
 ### App Preferences
 
 | Endpoint | Body |
 |---|---|
-| `/preference/details` | `{}`: returns `{ pushNotifications, emailNotifications, smsAlerts, language, languages: [{ code, label }] }` |
+| `/preference/details` | `{}`: returns `{ pushNotifications, emailNotifications, smsAlerts, language, languages: [{ code, label }] }`. Only English (`en`) is supported for now. |
 | `/preference/update` | any subset of `{ pushNotifications, emailNotifications, smsAlerts, language }` |
 
 ### `/config/support` - Help & Support / About
 
-`{ company: { name, logoUrl, website, address }, support: { phone, whatsappUrl, email }, app: { android: { latestVersion, appLink }, ios: { … } } }`, all taken from admin Settings.
+`{ company: { name, logoUrl, website, address }, support: { phone, whatsappUrl, email }, bankDetails, app: { android: { latestVersion, appLink }, ios: { … } } }`, all taken from admin Settings.
+
+`bankDetails` is `{ bankName, accountName, accountNumber, ifscCode, branch, upiId }`, or `null` when admin hasn't entered any. The same details are printed on PO PDFs.
+
+### `/config/faq`
+
+`{ records: [{ id, question, answer }] }`: the active FAQs in admin's sort order (Administration > FAQs). Answers are plain text; keep the line breaks.
+
+### `/config/terms`
+
+`{ content, updatedAt }`: the full Terms & Conditions from Settings > Terms & Conditions (plain text, line breaks kept). `content` is `null` until admin adds it.
 
 ---
 
-## Not yet available
+## Admin-side controls that affect the app
 
-- FAQs, bank details and terms & conditions (no source in Settings yet)
-- The "Offer" tab (no screen in the final design)
-- Price-change / new-arrival / low-stock notifications (only order-status notifications are sent today)
+| Admin panel | Effect in the app |
+|---|---|
+| Product > Publish > **Clearance Stock** | Product appears in the Offer tab |
+| Product > Publish > **New Product** | Product appears in New Arrivals and triggers a `NEW_ARRIVAL` notification |
+| Administration > **FAQs** | `/config/faq` |
+| Settings > **Bank Details** | `/config/support` → `bankDetails`, and PO PDFs |
+| Settings > **Terms & Conditions** | `/config/terms`, and the PO terms printed on PDFs |

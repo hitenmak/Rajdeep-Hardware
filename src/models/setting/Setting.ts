@@ -78,6 +78,22 @@ const schema: Schema<ISetting> = new Schema({
         },
     },
 
+    // shown on the dealer PO PDF and the app's Help & Support screen
+    bankDetails: {
+        bankName: { type: String, default: null },
+        accountName: { type: String, default: null },
+        accountNumber: { type: String, default: null },
+        ifscCode: { type: String, default: null },
+        branch: { type: String, default: null },
+        upiId: { type: String, default: null },
+    },
+
+    legal: {
+        termsAndConditions: { type: String, default: null }, // full T&C page in the dealer app
+        purchaseOrderTerms: { type: String, default: null }, // short terms printed on every PO PDF
+        updatedAt: { type: Date, default: null },
+    },
+
     appDetails: {
         androidApp: {
             apkUrl: { type: String, default: null },

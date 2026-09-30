@@ -13,6 +13,8 @@ import DealerCatalogue from './DealerCatalogue';
 import DealerCart from './DealerCart';
 import Sequence from './Sequence';
 import DealerNotification from './DealerNotification';
+import ProductWatch from './ProductWatch';
+import StockReservation from './StockReservation';
 
 //--------------------------------------------------------------
 
@@ -32,4 +34,6 @@ export default {
     DealerCart,
     Sequence,
     DealerNotification,
+    ProductWatch,
+    StockReservation,
 }

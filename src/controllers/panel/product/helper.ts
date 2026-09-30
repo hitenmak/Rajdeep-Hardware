@@ -42,6 +42,37 @@ const combinationSignature = (attributeValues: any[] = []): string => {
         .join('|');
 }
 
+// The edit form re-submits every variation from scratch and carries no _id, so a plain
+// replace would mint new variation ids (breaking dealer carts and PO line references) and
+// zero server-owned fields the form never shows. Match each submitted row to the variation
+// it replaces - same attribute combination first, then same SKU - and carry those over.
+export const mergeExistingVariationState = (existing: any[] = [], parsed: any[] = []): any[] => {
+    const bySignature = new Map<string, any>();
+    const bySku = new Map<string, any>();
+    (existing || []).forEach((v: any) => {
+        const signature = combinationSignature(v.attributeValues);
+        if (signature) bySignature.set(signature, v);
+        if (!empty(v.sku)) bySku.set(getStr(v.sku), v);
+    });
+
+    const used = new Set<string>();
+    return parsed.map((row: any) => {
+        const signature = combinationSignature(row.attributeValues);
+        let match = signature ? bySignature.get(signature) : null;
+        if (!match && !empty(row.sku)) match = bySku.get(getStr(row.sku));
+        if (!match || used.has(getStr(match._id))) return row;
+        used.add(getStr(match._id));
+
+        return {
+            ...row,
+            _id: match._id,
+            reservedQuantity: Number(match.reservedQuantity) || 0,
+            salePrice: match.salePrice ?? null,
+            barcode: match.barcode ?? null,
+        };
+    });
+}
+
 export const parseVariations = (rawVariations: any = []): any[] => {
     const list = Array.isArray(rawVariations) ? rawVariations : Object.values(rawVariations || {});
     const seen = new Set<string>();

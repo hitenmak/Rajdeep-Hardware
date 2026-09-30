@@ -246,6 +246,7 @@ export default class ProductStockUpdateController {
 
             let updated = 0;
             const failures: { row: number; message: string }[] = [];
+            const watch = await Core.ProductWatch.capture(Object.keys(groups));
 
             for (const productId of Object.keys(groups)) {
                 const groupRows = groups[productId];
@@ -283,6 +284,7 @@ export default class ProductStockUpdateController {
                 }
             }
 
+            Core.ProductWatch.dispatch(watch);
             delete req.session[SESSION_KEY];
 
             return res.render('panel/product-stock-update/summary', {
@@ -399,6 +401,7 @@ export default class ProductStockUpdateController {
             let updated = 0;
             const failures: { row: number; message: string }[] = [];
             const warnings: { row: number; message: string }[] = [];
+            const watch = await Core.ProductWatch.capture(Object.keys(groups));
 
             for (const productId of Object.keys(groups)) {
                 const groupRows = groups[productId];
@@ -487,6 +490,7 @@ export default class ProductStockUpdateController {
                 }
             }
 
+            Core.ProductWatch.dispatch(watch);
             delete req.session[FULL_SESSION_KEY];
 
             return res.render('panel/product-stock-update/full-summary', {

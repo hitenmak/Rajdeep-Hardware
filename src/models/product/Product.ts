@@ -112,6 +112,8 @@ const schema: Schema<IProduct> = new Schema({
         inventoryTracking: { type: Boolean, default: true },
         allowBackorders: { type: Boolean, default: false },
         globalStock: { type: Number, default: 0 },
+        // units held by approved, not-yet-delivered POs (variations track their own)
+        reservedQuantity: { type: Number, default: 0 },
         lowStockThreshold: { type: Number, default: 0 },
     },
 
@@ -149,6 +151,7 @@ const schema: Schema<IProduct> = new Schema({
     visibility: { type: String, default: 'PUBLIC' },
     featured: { type: Boolean, default: false },
     isNewArrival: { type: Boolean, default: false },
+    isClearance: { type: Boolean, default: false }, // listed in the dealer app's Offer tab
     sortOrder: { type: Number, default: 0 },
 
     createdBy: { type: Schema.Types.ObjectId, ref: 'users', default: null },

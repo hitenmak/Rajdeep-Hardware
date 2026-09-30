@@ -86,6 +86,17 @@ export const parseItems = (rawItems: any = []): any[] => {
         });
 }
 
+// lines matched on product + SKU keep the variant fields the panel form doesn't render
+export const carryLineSnapshots = (existing: any[] = [], parsed: any[] = []): any[] => {
+    const pool = [...(existing || [])];
+    return parsed.map((row: any) => {
+        const index = pool.findIndex((e: any) => getStr(e.productId) === getStr(row.productId) && getStr(e.sku) === getStr(row.sku));
+        if (index === -1) return row;
+        const [match] = pool.splice(index, 1);
+        return { ...row, variationId: match.variationId ?? null, variantLabel: match.variantLabel ?? null, mrp: match.mrp ?? null };
+    });
+}
+
 export const computeTotals = (items: any[], shipping: number = 0): { subtotal: number; discount: number; tax: number; totalAmount: number } => {
     const subtotal = items.reduce((sum, i) => sum + (i.quantity * i.unitPrice), 0);
     const discount = items.reduce((sum, i) => sum + (i.discount || 0), 0);

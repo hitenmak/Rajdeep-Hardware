@@ -15,7 +15,6 @@ import { IObj } from '../../../common/interfaces';
 
 export const SUPPORTED_LANGUAGES = [
     { code: 'en', label: 'English' },
-    { code: 'hi', label: 'हिन्दी' },
 ];
 
 const TOGGLES = ['pushNotifications', 'emailNotifications', 'smsAlerts'];

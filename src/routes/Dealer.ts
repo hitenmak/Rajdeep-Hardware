@@ -13,6 +13,7 @@ import Dashboard from '../controllers/dealer/dashboard';
 import Notification from '../controllers/dealer/notification';
 import Preference from '../controllers/dealer/preference';
 import Config from '../controllers/dealer/config';
+import Offer from '../controllers/dealer/offer';
 
 const route = Router();
 
@@ -77,6 +78,11 @@ route.post('/preference/update', dealerAuth, Preference.update);
 
 // Help & Support
 route.post('/config/support', dealerAuth, Config.support);
+route.post('/config/faq', dealerAuth, Config.faq);
+route.post('/config/terms', dealerAuth, Config.terms);
+
+// Offer tab (clearance stock)
+route.post('/offer/list', dealerAuth, Offer.list);
 
 // 404
 route.all('*', (req: any, res: any) => {

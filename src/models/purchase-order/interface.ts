@@ -44,6 +44,13 @@ export interface IPurchaseOrder extends Document {
         fileName: string | null;
         generatedAt: Date | null;
     };
+    stock: {
+        state: string | null; // NONE, RESERVED, RELEASED, CONSUMED
+        lines: { productId: Schema.Types.ObjectId, variationId: Schema.Types.ObjectId | null, quantity: number }[];
+        reservedAt: Date | null;
+        releasedAt: Date | null;
+        consumedAt: Date | null;
+    };
     // PENDING, UNDER_REVIEW, PARTIALLY_APPROVED, APPROVED, PACKING,
     // READY_FOR_DELIVERY, OUT_FOR_DELIVERY, DELIVERED, REJECTED, CANCELLED
 

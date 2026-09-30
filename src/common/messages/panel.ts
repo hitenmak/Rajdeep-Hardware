@@ -256,3 +256,21 @@ export const PRODUCT = {
         FAIL: `Failed to save variations`,
     },
 }
+
+export const FAQ = {
+    DETAILS: {
+        NOT_FOUND: `FAQ not found`,
+    },
+    CREATE: {
+        SUCCESS: `FAQ created successfully`,
+        FAIL: `Failed to create FAQ`,
+    },
+    UPDATE: {
+        SUCCESS: `FAQ updated successfully`,
+        FAIL: `Failed to update FAQ`,
+    },
+    DELETE: {
+        SUCCESS: `FAQ deleted successfully`,
+        FAIL: `Failed to delete FAQ`,
+    },
+}

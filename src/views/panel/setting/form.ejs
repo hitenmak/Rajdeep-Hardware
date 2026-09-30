@@ -5,6 +5,8 @@
             <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#tab-pricing">Pricing</a></li>
             <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#tab-inventory">Inventory</a></li>
             <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#tab-email">Email</a></li>
+            <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#tab-bank">Bank Details</a></li>
+            <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#tab-terms">Terms &amp; Conditions</a></li>
         </ul>
     </div>
 
@@ -119,6 +121,56 @@
                     </div>
                 </div>
 
+                <!-- Bank Details -->
+                <div class="tab-pane fade" id="tab-bank">
+                    <small class="form-hint d-block mb-3">Printed on dealer purchase order PDFs and shown in the dealer app's Help &amp; Support screen.</small>
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Bank Name</label>
+                            <input type="text" name="bankName" class="form-control" value="<%= record.bankDetails?.bankName || '' %>" maxlength="200" placeholder="HDFC Bank">
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Account Name</label>
+                            <input type="text" name="bankAccountName" class="form-control" value="<%= record.bankDetails?.accountName || '' %>" maxlength="200">
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Account Number</label>
+                            <input type="text" name="bankAccountNumber" class="form-control" value="<%= record.bankDetails?.accountNumber || '' %>" maxlength="34">
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">IFSC Code</label>
+                            <input type="text" name="ifscCode" class="form-control text-uppercase" value="<%= record.bankDetails?.ifscCode || '' %>" maxlength="11" placeholder="HDFC0001234">
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Branch</label>
+                            <input type="text" name="bankBranch" class="form-control" value="<%= record.bankDetails?.branch || '' %>" maxlength="200">
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">UPI ID</label>
+                            <input type="text" name="upiId" class="form-control" value="<%= record.bankDetails?.upiId || '' %>" maxlength="100" placeholder="rajdeep@hdfcbank">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Terms & Conditions -->
+                <div class="tab-pane fade" id="tab-terms">
+                    <div class="mb-3">
+                        <label class="form-label">Terms &amp; Conditions</label>
+                        <small class="form-hint d-block mb-2">Full terms shown in the dealer app. Plain text; line breaks are kept.</small>
+                        <textarea name="termsAndConditions" class="form-control" rows="12" maxlength="50000"><%= record.legal?.termsAndConditions || '' %></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Purchase Order Terms</label>
+                        <small class="form-hint d-block mb-2">Short terms printed at the bottom of every dealer purchase order PDF, e.g. "1. Goods once sold will not be taken back."</small>
+                        <textarea name="purchaseOrderTerms" class="form-control" rows="4" maxlength="50000"><%= record.legal?.purchaseOrderTerms || '' %></textarea>
+                    </div>
+                    <% if (record.legal?.updatedAt) { %>
+                        <small class="text-muted">Last changed: <%= new Date(record.legal.updatedAt).toISOString().slice(0, 10) %></small>
+                    <% } %>
+                </div>
+
             </div>
         </div>
         <div class="card-footer" id="settingsSaveFooter">
@@ -177,7 +229,7 @@
     // Bootstrap's own "hide the previously active pane" lookup isn't guaranteed
     // to find it there. The nav <a> tags' own active-state switching (they're
     // all still inside one <ul class="nav-tabs">) is left to Bootstrap as normal.
-    var TAB_PANE_IDS = ['tab-general', 'tab-pricing', 'tab-inventory', 'tab-email'];
+    var TAB_PANE_IDS = ['tab-general', 'tab-pricing', 'tab-inventory', 'tab-email', 'tab-bank', 'tab-terms'];
 
     function syncActiveTab(activeId) {
         TAB_PANE_IDS.forEach(function (id) {

@@ -293,6 +293,7 @@ export default class ProductImportExportController {
             let created = 0;
             const failures: { row: number; message: string }[] = [];
             const warnings: { row: number; message: string }[] = [];
+            const importStartedAt = new Date();
 
             for (const key of Object.keys(groups)) {
                 const groupRows = groups[key];
@@ -407,6 +408,10 @@ export default class ProductImportExportController {
                     groupRows.forEach((r: any) => failures.push({ row: r.row, message: e?.message || 'Failed to create this row.' }));
                 }
             }
+
+            // products this run created -> new-arrival notifications for the ones that went live
+            const createdIds = await Product.distinct('_id', { createdBy: panelUser?._id, createdAt: { $gte: importStartedAt } });
+            Core.ProductWatch.dispatch(await Core.ProductWatch.capture([]), createdIds);
 
             delete req.session[SESSION_KEY];
 

@@ -202,6 +202,16 @@ export default {
         },
     },
 
+    'FAQ': {
+        label: 'FAQs',
+        privileges: {
+            'VIEW': { label: 'View', isPermitted: false },
+            'CREATE': { label: 'Create', isPermitted: false },
+            'UPDATE': { label: 'Update', isPermitted: false },
+            'DELETE': { label: 'Delete', isPermitted: false },
+        },
+    },
+
     'LOGIN-AUDIT': {
         label: 'Login Audit',
         privileges: {

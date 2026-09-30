@@ -25,6 +25,7 @@ import PurchaseOrderController from '../controllers/panel/purchase-order';
 import ProductImportExportController from '../controllers/panel/product-import-export';
 import ProductStockUpdateController from '../controllers/panel/product-stock-update';
 import ReportController from '../controllers/panel/report';
+import FaqController from '../controllers/panel/faq';
 
 const route = Router();
 // in-memory only - the uploaded spreadsheet is parsed and discarded, never persisted as a media asset
@@ -206,6 +207,15 @@ route.get('/reports/inventory/export', panelPermission('REPORT.EXPORT'), ReportC
 route.get('/reports/monthly', panelPermission('REPORT.VIEW'), ReportController.monthlyPage);
 route.get('/reports/monthly/export', panelPermission('REPORT.EXPORT'), ReportController.monthlyExport);
 // } Reports
+
+// FAQs (dealer app Help & Support) {
+route.get('/faqs', panelPermission('FAQ.VIEW'), FaqController.list);
+route.get('/faqs/create', panelPermission('FAQ.CREATE'), FaqController.createPage);
+route.post('/faqs/create', panelPermission('FAQ.CREATE'), FaqController.create);
+route.get('/faqs/:id/edit', panelPermission('FAQ.UPDATE'), FaqController.editPage);
+route.post('/faqs/:id/edit', panelPermission('FAQ.UPDATE'), FaqController.update);
+route.post('/faqs/:id/delete', panelPermission('FAQ.DELETE'), FaqController.delete);
+// } FAQs
 
 // Settings (Branding) {
 route.get('/settings', panelPermission('SETTING.VIEW'), SettingController.editPage);

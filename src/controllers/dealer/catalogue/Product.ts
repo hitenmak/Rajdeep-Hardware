@@ -38,6 +38,7 @@ export default class Product {
                 categoryId: `objectId`,
                 inStock: `boolean`,
                 newArrival: `boolean`,
+                clearance: `boolean`,
                 sort: `in: ${Query.SORT_BY.join(',')}`,
             });
             const pagination = getPagination(req?.body);
@@ -47,6 +48,7 @@ export default class Product {
             if (!empty(body.categoryId)) conditions.push(Query.inCategories([body.categoryId]));
             if (getBool(body.inStock)) conditions.push(Query.IN_STOCK_CONDITION);
             if (getBool(body.newArrival)) conditions.push({ isNewArrival: true });
+            if (getBool(body.clearance)) conditions.push({ isClearance: true });
             const searchCondition = await Query.searchCondition(search, body.searchBy || 'all');
             if (searchCondition) conditions.push(searchCondition);
 

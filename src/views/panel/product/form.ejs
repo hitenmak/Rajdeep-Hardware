@@ -274,6 +274,11 @@
                     <input type="checkbox" class="form-check-input" id="isNewArrival" name="isNewArrival" value="true" <%= record && record.isNewArrival ? 'checked' : '' %>>
                     <label class="form-check-label" for="isNewArrival">New Product</label>
                 </div>
+                <div class="form-check form-switch mt-2">
+                    <input type="checkbox" class="form-check-input" id="isClearance" name="isClearance" value="true" <%= record && record.isClearance ? 'checked' : '' %>>
+                    <label class="form-check-label" for="isClearance">Clearance Stock</label>
+                    <small class="form-hint d-block">Listed in the dealer app's Offer tab.</small>
+                </div>
             </div>
 
         </div>

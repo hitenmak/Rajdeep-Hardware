@@ -294,11 +294,13 @@ export default class ProductController {
                 visibility: body.visibility,
                 featured: !!body.featured,
                 isNewArrival: !!body.isNewArrival,
+                isClearance: getBool(req.body?.isClearance),
                 sortOrder: body.sortOrder || 0,
 
                 createdBy: panelUser?._id,
                 updatedBy: panelUser?._id,
             });
+            Core.ProductWatch.dispatch(await Core.ProductWatch.capture([]), [record._id]);
 
             const createdSnapshot = { ...record, variationCount: (record.variations || []).length };
             await Core.ActivityLog.log({
@@ -434,7 +436,9 @@ export default class ProductController {
             const attributes = Helper.parseAttributes(req.body?.attributes);
             const extraAttributes = Helper.parseAttributes(req.body?.extraAttributes).map((a: any) => ({ ...a, isProductLevelAddition: true }));
             const variationAttributes = body.productType === 'VARIABLE' ? Helper.parseVariationAttributes(req.body?.variationAttributes) : [];
-            const variations = body.productType === 'VARIABLE' ? Helper.parseVariations(req.body?.variations) : [];
+            const variations = body.productType === 'VARIABLE'
+                ? Helper.mergeExistingVariationState(record.variations, Helper.parseVariations(req.body?.variations))
+                : [];
 
             const { simpleRawMaterial, simplePrice: newPrice } = await applyDynamicPricing(body, req, variations, record.rawMaterial);
 
@@ -483,12 +487,13 @@ export default class ProductController {
                 visibility: body.visibility,
                 featured: !!body.featured,
                 isNewArrival: !!body.isNewArrival,
+                isClearance: getBool(req.body?.isClearance),
                 sortOrder: body.sortOrder || 0,
 
                 updatedBy: panelUser?._id,
             };
 
-            await Product.findByIdAndUpdate(req.params.id, { $set: payload });
+            await Core.ProductWatch.track([req.params.id], () => Product.findByIdAndUpdate(req.params.id, { $set: payload }));
 
             // activity log - diff the pre-update record against the values just
             // written, so the log shows exactly which curated fields changed {
@@ -581,7 +586,7 @@ export default class ProductController {
             const record: any = await Product.findOne({ _id: req.params.id, deletedAt: null }).lean();
             if (empty(record)) throw new Error(PANEL_MSG.PRODUCT.DETAILS.NOT_FOUND);
 
-            await Product.findByIdAndUpdate(req.params.id, { status });
+            await Core.ProductWatch.track([req.params.id], () => Product.findByIdAndUpdate(req.params.id, { status }));
             await Core.ActivityLog.log({
                 req, module: 'PRODUCT', entityId: req.params.id, entityLabel: record.name, action: 'STATUS_CHANGE',
                 changes: [{ field: 'status', label: 'Status', oldValue: record.status, newValue: status }],

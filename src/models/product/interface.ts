@@ -102,6 +102,7 @@ export interface IProduct extends Document {
         inventoryTracking: boolean | null;
         allowBackorders: boolean | null;
         globalStock: number | null;
+        reservedQuantity: number | null;
         lowStockThreshold: number | null;
     };
 
@@ -139,6 +140,7 @@ export interface IProduct extends Document {
     visibility: string | null; // PUBLIC, PRIVATE, CATALOGUE_ONLY
     featured: boolean | null;
     isNewArrival: boolean | null;
+    isClearance: boolean | null;
     sortOrder: number | null;
 
     createdBy: Schema.Types.ObjectId | null;

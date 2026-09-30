@@ -81,7 +81,8 @@ export default class DealerPricing {
 
         const source = variation && variation.priceMode === 'OVERRIDE' ? variation : pricing;
         const mrp = isPositive(source.price) ? Number(source.price) : null;
-        const sale = saleWindowOpen && isPositive(source.salePrice) ? Number(source.salePrice) : null;
+        // a "sale" price at or above the list price (e.g. left behind after the list price was cut) is ignored
+        const sale = saleWindowOpen && isPositive(source.salePrice) && (mrp === null || Number(source.salePrice) < mrp) ? Number(source.salePrice) : null;
 
         return { mrp, base: sale ?? mrp };
     }

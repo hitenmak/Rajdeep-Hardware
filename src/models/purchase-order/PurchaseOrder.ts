@@ -49,6 +49,22 @@ const schema: Schema<IPurchaseOrder> = new Schema({
         generatedAt: { type: Date, default: null },
     },
 
+    // see Core.StockReservation
+    stock: {
+        state: { type: String, default: 'NONE' }, // NONE, RESERVED, RELEASED, CONSUMED
+        lines: {
+            type: [new Schema({
+                productId: { type: Schema.Types.ObjectId, ref: 'products', default: null },
+                variationId: { type: Schema.Types.ObjectId, default: null },
+                quantity: { type: Number, default: 0 },
+            }, { _id: false })],
+            default: [],
+        },
+        reservedAt: { type: Date, default: null },
+        releasedAt: { type: Date, default: null },
+        consumedAt: { type: Date, default: null },
+    },
+
     assignedPackageManagerId: { type: Schema.Types.ObjectId, ref: 'users', default: null },
     assignedDeliveryManagerId: { type: Schema.Types.ObjectId, ref: 'users', default: null },
 

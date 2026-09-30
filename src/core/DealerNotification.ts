@@ -15,6 +15,9 @@ import pushNotification from '../services/push-notification/handler';
 
 export const DEALER_NOTIFICATION_TYPE = {
     ORDER_STATUS: 'ORDER_STATUS',
+    PRICE_UPDATED: 'PRICE_UPDATED',
+    NEW_ARRIVAL: 'NEW_ARRIVAL',
+    LOW_STOCK: 'LOW_STOCK',
 };
 
 export interface IDealerNotificationPayload {
@@ -61,6 +64,43 @@ export default class DealerNotification {
             if (fcmTokens.length) await pushNotification({ fcmTokens, title: payload.title, body: payload.description, data: { type: payload.type, navigateTo: payload.navigateTo, ...(payload.data || {}) } });
         } catch (e: any) {
             logError(e, '[DEALER-NOTIFICATION-NOTIFY] -');
+        }
+    }
+
+    // fan-out for broadcasts: one insert, one query each for preferences and device tokens
+    static async notifyMany(entries: { dealerId: any, payload: IDealerNotificationPayload }[]): Promise<void> {
+        try {
+            if (!entries.length) return;
+
+            await Notification.insertMany(entries.map(({ dealerId, payload }) => ({
+                dealerId,
+                type: payload.type,
+                title: payload.title,
+                description: payload.description,
+                navigateTo: payload.navigateTo || null,
+                data: payload.data || null,
+                isRead: false,
+            })));
+
+            const dealerIds = [...new Set(entries.map((e) => getStr(e.dealerId)))];
+            const [optedOut, sessions] = await Promise.all([
+                Dealer.find({ _id: { $in: dealerIds }, 'preferences.pushNotifications': false }).select('_id').lean(),
+                DealerSession.find({ dealerId: { $in: dealerIds }, revokedAt: null, expiresAt: { $gt: new Date() }, fcmToken: { $ne: null } }).select('dealerId fcmToken').lean(),
+            ]);
+            const skip = new Set(optedOut.map((d: any) => getStr(d._id)));
+            const tokensByDealer = new Map<string, Set<string>>();
+            sessions.forEach((s: any) => {
+                const id = getStr(s.dealerId);
+                if (skip.has(id)) return;
+                tokensByDealer.set(id, (tokensByDealer.get(id) || new Set()).add(getStr(s.fcmToken)));
+            });
+
+            for (const { dealerId, payload } of entries) {
+                const fcmTokens = [...(tokensByDealer.get(getStr(dealerId)) || [])];
+                if (fcmTokens.length) await pushNotification({ fcmTokens, title: payload.title, body: payload.description, data: { type: payload.type, navigateTo: payload.navigateTo, ...(payload.data || {}) } });
+            }
+        } catch (e: any) {
+            logError(e, '[DEALER-NOTIFICATION-NOTIFY-MANY] -');
         }
     }
 

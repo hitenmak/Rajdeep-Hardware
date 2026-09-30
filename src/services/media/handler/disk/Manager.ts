@@ -55,17 +55,15 @@ export default class Manager {
 		if (typeof keyData === 'string') keyData = [keyData];
 
 		const baseFolderPath = `${Config.STORAGE.LOCAL_FOLDER}/${folderPath ? folderPath + '/' : ''}`;
-		(keyData || []).forEach(fileName => {
-			try {
-				fs.exists(baseFolderPath + fileName, (exists: any) => {
-					if (exists) fs.unlinkSync(baseFolderPath + fileName);
-				});
-			} catch (e: any) {
-				// 
-			}
-		})
 
-		return 0;
+		// awaited so callers really are done when this resolves; a failed unlink (e.g. EBUSY on
+		// Windows) is logged instead of escaping from a callback as an uncaught exception
+		const results = await Promise.allSettled((keyData || []).map((fileName) => fs.promises.unlink(baseFolderPath + fileName)));
+		results.forEach((result, index) => {
+			if (result.status === 'rejected' && result.reason?.code !== 'ENOENT') logError(result.reason, `[DISK-REMOVE] - ${keyData?.[index]}`);
+		});
+
+		return results.filter((result) => result.status === 'fulfilled').length;
 	}
 
 }

@@ -69,7 +69,7 @@ export default class DealerCatalogue {
             return { inStock: statuses.some((s) => s.inStock), availableQuantity: available, lowStock: statuses.some((s) => s.lowStock) };
         }
 
-        const available = Math.max(0, Number(inventory.globalStock) || 0);
+        const available = Math.max(0, (Number(inventory.globalStock) || 0) - (Number(inventory.reservedQuantity) || 0));
         const threshold = Number(inventory.lowStockThreshold) || 0;
         return { inStock: available > 0 || !!inventory.allowBackorders, availableQuantity: available, lowStock: available > 0 && available <= threshold };
     }

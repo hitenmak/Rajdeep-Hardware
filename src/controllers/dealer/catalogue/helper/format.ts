@@ -65,6 +65,7 @@ export const productCard = (product: IObj, ctx: IDealerPricingContext): IObj => 
         imageUrl: primaryImageUrl(product),
         isVariable, // app shows "Choose Option" instead of "Add to Cart"
         isNewArrival: !!product.isNewArrival,
+        isClearance: !!product.isClearance,
         price: price(resolved, isVariable && variations.length > 1),
         stock: stock(Core.DealerCatalogue.stock(product)),
     };

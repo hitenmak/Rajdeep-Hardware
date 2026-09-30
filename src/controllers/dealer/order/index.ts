@@ -16,6 +16,7 @@ import * as Helper from './helper';
 import { getOrCreateCart, formatCart } from '../cart/helper';
 import { validate } from '../common/validate';
 import { getPagination, paginationMeta } from '../common/pagination';
+import { bankDetails } from '../config';
 
 // Others
 import { DEALER_MSG } from '../../../common/messages';
@@ -218,7 +219,7 @@ export default class Order {
 
             let fileName = order.pdf?.fileName;
             if (!cached) {
-                const setting: any = await Setting.findOne({}).select('general contactDetails branding').lean();
+                const setting: any = await Setting.findOne({}).select('general contactDetails branding bankDetails legal').lean();
                 const content = {
                     order,
                     dealer: authDealer,
@@ -229,6 +230,8 @@ export default class Order {
                         logoUrl: empty(setting?.branding?.logoFull) ? null : MediaManager.Setting.get(setting.branding.logoFull),
                     },
                     status: Helper.status(order.status),
+                    bank: bankDetails(setting),
+                    terms: getStr(setting?.legal?.purchaseOrderTerms) || null,
                     formatDate: (d: any) => formatDate(d, 'MMM DD, YYYY'),
                     money: (v: any) => `₹${getNum(v).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
                 };

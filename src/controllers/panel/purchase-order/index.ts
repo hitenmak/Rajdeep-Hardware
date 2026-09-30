@@ -241,7 +241,8 @@ export default class PurchaseOrderController {
             const dealer: any = await Dealer.findOne({ _id: req.body?.dealerId, deletedAt: null }).lean();
             if (empty(dealer)) throw new Error(PANEL_MSG.DEALER.DETAILS.NOT_FOUND);
 
-            const items = Helper.parseItems(req.body?.items);
+            // the edit form doesn't carry the dealer app's variant snapshot - keep it for unchanged lines
+            const items = Helper.carryLineSnapshots(record.items, Helper.parseItems(req.body?.items));
             if (!items.length) throw new Error(PANEL_MSG.PURCHASE_ORDER.DETAILS.NO_ITEMS);
 
             const shipping = getNum(req.body?.shipping, 0);
@@ -326,7 +327,10 @@ export default class PurchaseOrderController {
                 summary: `Purchase order "${record.poNumber}" reviewed: ${record.status} → ${overallStatus}`,
             });
 
-            if (overallStatus !== record.status) await Core.DealerNotification.orderStatusChanged(record, overallStatus);
+            if (overallStatus !== record.status) {
+                await Core.StockReservation.onStatusChange(record._id, overallStatus);
+                await Core.DealerNotification.orderStatusChanged(record, overallStatus);
+            }
 
             req.setFlash?.('success', PANEL_MSG.PURCHASE_ORDER.REVIEW.SUCCESS);
             return res.redirect(`/panel/purchase-orders/${req.params.id}`);
@@ -372,7 +376,10 @@ export default class PurchaseOrderController {
                 changes: [{ field: 'status', label: 'Status', oldValue: record.status, newValue: status }],
             });
 
-            if (status !== record.status) await Core.DealerNotification.orderStatusChanged(record, status);
+            if (status !== record.status) {
+                await Core.StockReservation.onStatusChange(record._id, status);
+                await Core.DealerNotification.orderStatusChanged(record, status);
+            }
 
             req.setFlash?.('success', PANEL_MSG.PURCHASE_ORDER.STATUS.SUCCESS);
             return res.redirect(`/panel/purchase-orders/${req.params.id}`);
