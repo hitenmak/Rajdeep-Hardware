@@ -3,4 +3,5 @@ export const ROUTE_PREFIX = {
     ADMIN: '/admin',
     API: '/api',
     PANEL: '/panel',
+    DEALER: '/dealer',
 }

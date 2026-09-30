@@ -8,6 +8,7 @@ import { INotification } from './interface';
 
 const schema: Schema<INotification> = new Schema({
     userId: { type: Schema.Types.ObjectId, ref: 'users', default: null },
+    dealerId: { type: Schema.Types.ObjectId, ref: 'dealers', default: null, index: true },
     actionBy: { type: Schema.Types.ObjectId, ref: 'users', default: null },
 
     type: { type: String, default: null },

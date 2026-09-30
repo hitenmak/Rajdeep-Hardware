@@ -56,4 +56,9 @@ export default {
 		DEFAULT_MEDIA: '',
 	},
 
+	PURCHASE_ORDER: {
+		FOLDER: 'purchase-order',
+		DEFAULT_MEDIA: '',
+	},
+
 }

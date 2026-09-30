@@ -6,6 +6,28 @@ import { IDealer } from './interface';
 
 //--------------------------------------------------------------
 
+// Credentials live in their own sub-document with select:false so existing panel/admin
+// queries on dealers never load password or OTP hashes. Load explicitly with .select('+auth').
+const authSchema: Schema = new Schema({
+    password: {
+        hash: { type: String, default: null },
+        salt: { type: String, default: null },
+    },
+    passwordChangedAt: { type: Date, default: null },
+
+    otp: {
+        hash: { type: String, default: null },
+        expireAt: { type: Date, default: null },
+        sentAt: { type: Date, default: null },
+        attempts: { type: Number, default: 0 },
+    },
+    resetNonceHash: { type: String, default: null },
+
+    failedLoginAttempts: { type: Number, default: 0 },
+    lockUntil: { type: Date, default: null },
+    lastLoginAt: { type: Date, default: null },
+}, { _id: false });
+
 const schema: Schema<IDealer> = new Schema({
     dealerCode: { type: String, default: null },
     businessName: { type: String, default: null },
@@ -28,6 +50,24 @@ const schema: Schema<IDealer> = new Schema({
     approvedAt: { type: Date, default: null },
 
     defaultDiscount: { type: Number, default: 0 },
+
+    auth: { type: authSchema, default: () => ({}), select: false },
+
+    profileImage: { type: String, default: null },
+    isProfileImageLocalStorage: { type: Boolean, default: true },
+
+    preferences: {
+        pushNotifications: { type: Boolean, default: true },
+        emailNotifications: { type: Boolean, default: true },
+        smsAlerts: { type: Boolean, default: false },
+        language: { type: String, default: 'en' },
+    },
+
+    // newest first, capped by the dealer catalogue search API
+    recentSearches: {
+        type: [new Schema({ term: { type: String, default: null }, searchedAt: { type: Date, default: null } }, { _id: false })],
+        default: [],
+    },
 
     createdBy: { type: Schema.Types.ObjectId, ref: 'users', default: null },
     updatedBy: { type: Schema.Types.ObjectId, ref: 'users', default: null },

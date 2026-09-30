@@ -5,7 +5,7 @@ import { User } from '../../../models/user';
 import { LoginAudit } from '../../../models/login-audit';
 
 // Helpers
-import { log, logInfo, logWarn, logError, logSuccess, empty, sanitize } from '../../../utils';
+import { log, logInfo, logWarn, logError, logSuccess, empty, sanitize, getClientIp, getClientAgent } from '../../../utils';
 import Token from '../../../services/token';
 import Core from '../../../core';
 
@@ -14,16 +14,6 @@ import { PANEL_MSG } from '../../../common/messages';
 import { PANEL_AUTH } from '../../../config/Constant';
 
 //--------------------------------------------------------------
-
-const getClientIp = (req: any): string => {
-    return (req.headers['x-forwarded-for'] || '').toString().split(',')[0].trim() || req.socket?.remoteAddress || req.ip || '';
-}
-
-const getClientAgent = (req: any): string => {
-    const ua = req.useragent;
-    if (empty(ua)) return req.headers['user-agent'] || '';
-    return `${ua.browser || ''} ${ua.version || ''} on ${ua.os || ''}`.trim();
-}
 
 export default class AuthController {
 

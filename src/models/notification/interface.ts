@@ -4,6 +4,7 @@ import { Schema, Document } from 'mongoose';
 
 export interface INotification extends Document {
     userId: Schema.Types.ObjectId;
+    dealerId: Schema.Types.ObjectId | null; // set for dealer-app notifications
     actionBy: Schema.Types.ObjectId;
 
     type: string | null;

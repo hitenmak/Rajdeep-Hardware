@@ -17,6 +17,7 @@ import * as Helper from './helper';
 
 // Others
 import { PANEL_MSG } from '../../../common/messages';
+import { SEQUENCE } from '../../../core/Sequence';
 
 //--------------------------------------------------------------
 
@@ -140,7 +141,7 @@ export default class PurchaseOrderController {
             const shipping = getNum(req.body?.shipping, 0);
             const totals = Helper.computeTotals(items, shipping);
 
-            const sequence = (await PurchaseOrder.countDocuments({})) + 1;
+            const sequence = await Core.Sequence.next(SEQUENCE.PURCHASE_ORDER, () => PurchaseOrder.countDocuments({}));
             const poNumber = Helper.generatePoNumber(sequence, settings?.purchaseOrder?.poPrefix, settings?.purchaseOrder?.poNumberFormat);
 
             const record: any = await PurchaseOrder.create({
@@ -325,6 +326,8 @@ export default class PurchaseOrderController {
                 summary: `Purchase order "${record.poNumber}" reviewed: ${record.status} → ${overallStatus}`,
             });
 
+            if (overallStatus !== record.status) await Core.DealerNotification.orderStatusChanged(record, overallStatus);
+
             req.setFlash?.('success', PANEL_MSG.PURCHASE_ORDER.REVIEW.SUCCESS);
             return res.redirect(`/panel/purchase-orders/${req.params.id}`);
         } catch (e: any) {
@@ -368,6 +371,8 @@ export default class PurchaseOrderController {
                 req, module: 'PURCHASE-ORDER', entityId: req.params.id, entityLabel: record.poNumber, action: 'STATUS_CHANGE',
                 changes: [{ field: 'status', label: 'Status', oldValue: record.status, newValue: status }],
             });
+
+            if (status !== record.status) await Core.DealerNotification.orderStatusChanged(record, status);
 
             req.setFlash?.('success', PANEL_MSG.PURCHASE_ORDER.STATUS.SUCCESS);
             return res.redirect(`/panel/purchase-orders/${req.params.id}`);
