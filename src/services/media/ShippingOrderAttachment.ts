@@ -25,7 +25,7 @@ export default class ShippingOrderAttachment {
     }
 
     static async generatePdf({ content, template, fileName, pageSetup, isLocalStorage = IS_LOCAL_STORAGE }: any): Promise<any> {
-        return await PdfHandler.Handler.Generate({ content, folderName: this.FOLDER, template, fileName, pageSetup, isLocalStorage });
+        return await PdfHandler.Handler({ content, folderName: this.FOLDER, template, fileName, pageSetup, isLocalStorage });
     }
 
 }

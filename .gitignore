@@ -44,3 +44,8 @@ storage/*
 #-----------------------------------------------
 # Archives (may contain secrets)
 *.zip
+
+
+#-----------------------------------------------
+# Design exports (large binaries, source of truth is Figma)
+docs/figma/

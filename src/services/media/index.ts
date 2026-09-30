@@ -8,6 +8,7 @@ import AttributeValue from './AttributeValue';
 import Product from './Product';
 import Setting from './Setting';
 import DeliveryImage from './DeliveryImage';
+import PurchaseOrder from './PurchaseOrder';
 
 //--------------------------------------------------------------
 
@@ -22,4 +23,5 @@ export default {
 	Product,
 	Setting,
 	DeliveryImage,
+	PurchaseOrder,
 }

@@ -25,7 +25,7 @@ export default class Otp {
             const maxNum = parseInt(max);
             const minNum = parseInt(min);
 
-            const otp = Config.APP.MODE === 'dev' ? getNum(Config.APP.MASTER_OTP) : Math.floor(Math.random() * (maxNum - minNum + 1)) + minNum;
+            const otp = Config.APP.MODE === 'dev' ? getNum(getStr(Config.APP.MASTER_OTP).slice(0, digits)) : Math.floor(Math.random() * (maxNum - minNum + 1)) + minNum;
 
             const expireInSecond = OTP.EXPIRE_TIME_IN_SECOND;
             const expireAt = new Date();

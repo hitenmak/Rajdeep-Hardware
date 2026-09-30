@@ -8,8 +8,11 @@ import { IPurchaseOrder } from './interface';
 
 const itemSchema = new Schema({
     productId: { type: Schema.Types.ObjectId, ref: 'products', default: null },
+    variationId: { type: Schema.Types.ObjectId, default: null },
     sku: { type: String, default: null },
     productName: { type: String, default: null },
+    variantLabel: { type: String, default: null },
+    mrp: { type: Number, default: null },
 
     quantity: { type: Number, default: 0 },
     unitPrice: { type: Number, default: 0 },
@@ -38,6 +41,14 @@ const schema: Schema<IPurchaseOrder> = new Schema({
     remarks: { type: String, default: null },
     status: { type: String, default: 'PENDING' },
 
+    source: { type: String, default: 'PANEL' }, // PANEL, DEALER_APP
+    shippingAddress: { type: String, default: null },
+    termsAcceptedAt: { type: Date, default: null },
+    pdf: {
+        fileName: { type: String, default: null },
+        generatedAt: { type: Date, default: null },
+    },
+
     assignedPackageManagerId: { type: Schema.Types.ObjectId, ref: 'users', default: null },
     assignedDeliveryManagerId: { type: Schema.Types.ObjectId, ref: 'users', default: null },
 
@@ -46,6 +57,8 @@ const schema: Schema<IPurchaseOrder> = new Schema({
 
     deletedAt: { type: Date, default: null },
 }, { timestamps: true });
+
+schema.index({ dealerId: 1, orderDate: -1 });
 
 schema.plugin(mongoosePagination);
 export default model<IPurchaseOrder>('purchaseOrders', schema, 'purchaseOrders') as any;

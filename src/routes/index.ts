@@ -8,6 +8,7 @@ import devRoutes from './Dev';
 import adminRoutes from './Admin';
 import apiRoutes from './Api';
 import panelRoutes from './Panel';
+import dealerRoutes from './Dealer';
 
 // Others
 import { ROUTE_PREFIX } from './config';
@@ -28,6 +29,7 @@ route.use(ROUTE_PREFIX.ADMIN, adminRoutes);
 route.use(ROUTE_PREFIX.API, apiRoutes);
 route.use(ROUTE_PREFIX.DEV, devRoutes);
 route.use(ROUTE_PREFIX.PANEL, panelRoutes);
+route.use(ROUTE_PREFIX.DEALER, dealerRoutes);
 
 
 // 404 urls {
